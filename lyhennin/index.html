@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sorolan Sakki - Sorolan Linkkilyhennin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
+    <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
+    <meta name="description" content="Sorolan linkkilyhennin.">
+    <meta name="keywords" content="URL, Shortener, Linkki, Lyhentaja">
+</head>
+<body>
+
+    <div class="laatikko">
+        <h1 class="otsikko">URL-Lyhentäjä</h1>
+        
+        <div class="osion-tausta">
+            <p style="margin: 0; text-align: center;">Jos sinulla on jokin todella pitkä linkki, voit kopioida sen tähän, ja tehdä siitä lyhyemmän.</p>
+        </div>
+
+        <div class="osion-tausta">
+            <h2>Luo Lyhytlinkki</h2>
+            <form id="lyhennin-lomake" class="flex-form">
+                <input type="url" class="syote" name="url" placeholder="http(s)://" pattern="https?://.+" required>
+                
+                <div class="form-row">
+                    <input type="text" class="syote" name="custom_code" placeholder="Oma loppuosa (valinnainen)">
+                    <input type="password" class="syote" name="secret" placeholder="Salasana loppuosaan">
+                </div>
+                
+                <button type="submit" class="nappula">Lyhennä linkki</button>
+            </form>
+
+            <div id="tulos-alue" style="display: none; width: 100%; text-align: center; margin-top: 20px;">
+                <p style="color: #ffaa00; margin-bottom: 15px; font-weight: bold; font-size: 1.2rem;">Linkki on valmis!</p>
+                
+                <input type="text" id="lyhennetty-url" class="syote" style="text-align: center; margin-bottom: 15px;" readonly>
+                
+                <div class="flex-form">
+                    <button id="kopioi-btn" class="nappula" type="button">Kopioi linkki</button>
+                    <a href="../qr" class="nappula" style="background: #191f2d; color: #ffaa00; border: 1px solid #ffaa00;">QR-Koodin luojaan</a>
+                </div>
+            </div>
+        </div>
+
+        <a href="../" class="linkki-takaisin">← Takaisin pääsivulle</a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

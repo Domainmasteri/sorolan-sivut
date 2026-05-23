@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pienoismallien Työpaja | Sorola</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="icon" href="styles/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pienoismallien Arkisto</h1>
+            <p>Iskän pienoismallikokoelma - Digitaalinen työpaja</p>
+            
+            <a href="https://srla.fi/pienoismallit" class="btn fb-btn" target="_blank">Siirry Facebook-ryhmään</a>
+            <br><br>
+            
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Hae julkaisuja...">
+                <button onclick="searchPosts()">Hae</button>
+            </div>
+            
+            <nav style="margin-top: 20px;"><a href="login">Hallintapaneeli / Kirjaudu</a></nav>
+        </header>
+
+        <main id="gallery">
+            <div class="loading">Ladataan julkaisuja...</div>
+        </main>
+
+        <hr>
+        
+        <section id="contact-info">
+            <h2>Yhteystiedot</h2>
+            <p id="contactText">Ladataan yhteystietoja...</p>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

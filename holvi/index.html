@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorolan Holvi</title>
+    <meta name="theme-color" content="#ffaa00">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap">
+    <link rel="stylesheet" type="text/css" href="holvi.css?v=4">
+</head>
+<body>
+
+    <div id="kirjautumis-nakyma" class="holvi-kortti">
+        <div class="banneri"></div>
+        <h1>Sorolan Holvi</h1>
+        <p class="kuvaus">Suojattu pääsy salasanaholviin. Syötä tunnuksesi tai käytä biometrista tunnistusta.</p>
+        
+        <div class="syote-ryhma">
+            <input type="text" id="kayttaja-tunnus" placeholder="Käyttäjätunnus" autocomplete="username">
+            <input type="password" id="paasalasana" placeholder="Pääsalasana">
+        </div>
+
+        <button id="sormi-login-btn" class="nappula nappi-oranssi piilotettu">☝️ Avaa sormenjäljellä / PIN</button>
+        <button id="avaa-btn" class="nappula">Avaa holvi</button>
+        
+        <div class="rekisterointi-osio">
+            <input type="text" id="kutsukoodi-kentta" placeholder="Kutsukoodi uutta tiliä varten">
+            <button id="rekisteroi-btn" class="nappula nappi-harmaa">Luo uusi käyttäjätili</button>
+        </div>
+    </div>
+
+    <div id="holvi-nakyma" class="holvi-kortti piilotettu">
+        <div class="banneri"></div>
+        <h2>Holvin Tallenteet</h2>
+        
+        <input type="text" id="haku-kentta" placeholder="🔍 Hae palvelua tai käyttäjää..." style="width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff;">
+        
+        <div class="lomake-laatikko">
+            <h3 id="lomake-otsikko">Lisää uusi kohde</h3>
+            <input type="hidden" id="muokkaus-id">
+            <input type="text" id="palvelu-nimi" placeholder="Palvelun nimi (esim. Netflix tai OP Visa)">
+            
+            <select id="tietue-tyyppi" onchange="vaihdaTietueTyyppia()" style="margin-bottom: 10px; width: 100%; padding: 10px;">
+                <option value="login">Käyttäjätunnus & Salasana</option>
+                <option value="kortti">Maksukortti</option>
+            </select>
+
+            <div id="lomake-login">
+                <input type="text" id="kayttajatunnus" placeholder="Käyttäjätunnus / Sähköposti">
+                <input type="text" id="uusi-salasana" placeholder="Salasana">
+                <input type="text" id="totp-secret" placeholder="2FA Secret Key (vapaaehtoinen)">
+            </div>
+
+            <div id="lomake-kortti" class="piilotettu">
+                <input type="text" id="kortinhaltija" placeholder="Kortinhaltijan nimi">
+                <input type="text" id="korttinumero" placeholder="Kortin numero">
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="kortti-vanhenee" placeholder="MM/YY">
+                    <input type="text" id="kortti-cvv" placeholder="CVV">
+                </div>
+            </div>
+            
+            <div class="lomake-napit">
+                <button id="tallenna-btn" class="nappula nappi-vihrea">Tallenna tiedot</button>
+                <button id="peruuta-muokkaus-btn" class="nappula nappi-harmaa piilotettu">Peruuta</button>
+            </div>
+        </div>
+
+        <div id="salasana-lista"></div>
+        
+        <div class="hallinta-lohko">
+            <h4>Turva-asetukset & Varmuuskopiot</h4>
+            <button id="aktivoi-sormi-btn" class="nappula nappi-sininen" style="margin-bottom: 15px;">Kytke sormenjälki tälle laitteelle</button>
+            <input type="password" id="uusi-paasalasana" placeholder="Uusi pääsalasana">
+            <button id="vaihda-paasalasana-btn" class="nappula nappi-oranssi">Vaihda pääsalasana</button>
+            <button id="tuhoa-tili-btn" class="nappula nappi-pieni nappi-punainen" style="width:100%; margin-top:15px;">Tuhoa koko tili pilvestä</button>
+            
+            <div class="nappi-rivi" style="margin-top:15px;">
+                <button id="vienti-json-btn" class="nappula nappi-pieni nappi-harmaa">Vie JSON</button>
+                <button id="vienti-csv-btn" class="nappula nappi-pieni nappi-harmaa">Vie CSV</button>
+            </div>
+            <input type="file" id="tuonti-tiedosto" accept=".json,.csv" style="display:none;">
+            <button onclick="document.getElementById('tuonti-tiedosto').click()" class="nappula nappi-pieni nappi-sininen" style="margin-top:10px;">Lataa varmuuskopio</button>
+        </div>
+
+        <button id="lukitse-btn" class="nappula nappi-punainen" style="margin-top:20px;">Lukitse holvi</button>
+    </div>
+    
+    <script src="app.js"></script>
+    <script src="holvi.js"></script>
+</body>
+</html>

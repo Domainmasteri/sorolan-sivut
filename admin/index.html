@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorola.fi - Admin Paneeli</title>
+    <link rel="stylesheet" href="../tyylit/pohja.css">
+		<link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
+    <style>
+        .admin-section {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 170, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; color: #fff; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #ffaa00; font-family: 'Orbitron', sans-serif; }
+        .flex-form { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .flex-form .syote { flex: 1; min-width: 150px; margin-bottom: 0; }
+        .flex-form .nappula { width: auto; margin-bottom: 0; padding: 10px 20px; }
+        .nappi-puna { background-color: #ff3333; color: white; }
+        .nappi-puna:hover { background-color: #cc0000; }
+        .nappi-oranssi { background-color: #ffaa00; color: #000; font-weight: bold; }
+        .nappi-oranssi:hover { background-color: #e69900; }
+    </style>
+</head>
+<body>
+
+    <div class="aalto"></div>
+
+    <div class="laatikko" style="max-width: 900px; width: 95%;">
+        <h1 class="otsikko">Admin Paneeli</h1>
+        
+        <div id="auth-section" class="admin-section" style="border-color: #ffaa00;">
+            <h3>🔑 Admin-kirjautuminen</h3>
+            <div class="flex-form">
+                <input type="text" id="admin-user" class="syote" placeholder="Käyttäjätunnus">
+                <input type="password" id="admin-pass" class="syote" placeholder="Salasana">
+            </div>
+            <div class="flex-form">
+                <input type="text" id="admin-invite-code" class="syote" placeholder="Admin-kutsukoodi (Vain jos luot uuden tilin)" style="display:none;">
+            </div>
+            <div class="flex-form" style="gap: 10px;">
+                <button id="login-btn" class="nappula" style="background-color: #0069d9; color: white;">Kirjaudu sisään</button>
+                <button id="show-register-btn" class="nappula" style="background-color: #333; color: white;">Rekisteröidy kutsukoodilla</button>
+                <button id="setup-btn" class="nappula" style="background-color: #218838; color: white; display: none;">🚀 Alusta Make-tili</button>
+                <button id="register-btn" class="nappula" style="background-color: #218838; color: white; display: none;">Luo tili & Kirjaudu</button>
+            </div>
+        </div>
+
+        <div id="admin-sisalto" style="display: none;">
+            
+            <div style="text-align: right; margin-bottom: 15px;">
+                <button id="logout-btn" class="nappula nappi-puna" style="display: inline-block; width: auto; padding: 10px 20px;">🚪 Kirjaudu ulos</button>
+            </div>
+            
+            <div id="maken-hallinta-lohko" class="admin-section" style="border-color: #ff3333; display: none;">
+                <h2>👑 Ylläpitäjien hallinta (Vain Make)</h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>Käyttäjätunnus</th><th>Toiminnot</th></tr>
+                        </thead>
+                        <tbody id="admins-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>🔗 Lyhytlinkit</h2>
+                <input type="hidden" id="edit-old-code"> <div class="flex-form">
+                    <input type="text" id="link-code" class="syote" placeholder="Koodi (esim. kissa)">
+                    <input type="url" id="link-url" class="syote" placeholder="Kohde-URL (https://...)">
+                    <button id="lisaa-linkki-btn" class="nappula">Tallenna / Muokkaa</button>
+                    <button id="peru-linkki-edit-btn" class="nappula" style="background:#333; display:none;">Peru</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>Koodi</th><th>Kohde</th><th>Klikit</th><th>Toiminnot</th></tr>
+                        </thead>
+                        <tbody id="links-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>🔑 Linkkien salasanat</h2>
+                <div class="flex-form">
+                    <input type="text" id="secret-code-input" class="syote" placeholder="Salasana (esim. holviavain)">
+                    <input type="number" id="secret-uses-input" class="syote" placeholder="Käyttökerrat (esim. 10)">
+                    <button id="tallenna-secret-btn" class="nappula">Tallenna / Muokkaa</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>Salasana</th><th>Käyttökertoja</th><th>Toiminnot</th></tr>
+                        </thead>
+                        <tbody id="secrets-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>👑 Admin-kutsukoodit</h2>
+                <div class="flex-form">
+                    <input type="text" id="admin-koodi-input" class="syote" placeholder="Uusi koodi">
+                    <button id="lisaa-admin-koodi-btn" class="nappula">Luo kutsukoodi</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>Koodi</th><th>Luonut</th><th>Toiminnot</th></tr>
+                        </thead>
+                        <tbody id="admin-invites-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>☝️ Holvin kutsukoodit</h2>
+                <div class="flex-form">
+                    <input type="text" id="holvi-koodi-input" class="syote" placeholder="Uusi kutsukoodi">
+                    <button id="lisaa-holvi-koodi-btn" class="nappula">Lisää kutsukoodi</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>Kutsukoodi</th><th>Toiminnot</th></tr>
+                        </thead>
+                        <tbody id="holvi-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <a href="../" class="nappula1" style="display: block; text-align: center; margin-top: 20px;">Takaisin pääsivulle</a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

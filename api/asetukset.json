@@ -1,0 +1,13 @@
+{
+  "holvi": {
+    "otsikko": "Sorolan Holvi",
+    "tiedote": "",
+    "naytaVienti": true
+  },
+  "salasanat": {
+    "otsikko": "Salasanakone"
+  },
+  "lyhennin": {
+    "otsikko": "Sorolan Linkkilyhentäjä"
+  }
+}
