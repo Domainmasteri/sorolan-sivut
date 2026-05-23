@@ -25,7 +25,7 @@ export async function onRequest(context) {
     // 1. Listaa kaikki Holvin kutsukoodit
     if (url.pathname.endsWith("/admin/invites")) {
       try {
-        const rows = await env.DB.prepare("SELECT koodi, kaytetty FROM kutsukoodit").all();
+        const rows = await env.HOLVI_DB.prepare("SELECT koodi, kaytetty FROM kutsukoodit").all();
         return new Response(JSON.stringify({ invites: rows.results }), { headers: corsHeaders });
       } catch (e) {
         return new Response(JSON.stringify({ error: "Tietokantavirhe: " + e.message }), { status: 500, headers: corsHeaders });
@@ -37,7 +37,7 @@ export async function onRequest(context) {
       try {
         const body = await request.json();
         if (!body.code) return new Response(JSON.stringify({ error: "Koodi puuttuu" }), { status: 400, headers: corsHeaders });
-        await env.DB.prepare("INSERT INTO kutsukoodit (koodi, kaytetty) VALUES (?, 0)").bind(body.code).run();
+        await env.HOLVI_DB.prepare("INSERT INTO kutsukoodit (koodi, kaytetty) VALUES (?, 0)").bind(body.code).run();
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (e) {
         return new Response(JSON.stringify({ error: "Koodi on jo olemassa tai tapahtui virhe." }), { status: 400, headers: corsHeaders });
@@ -48,7 +48,7 @@ export async function onRequest(context) {
     if (url.pathname.endsWith("/admin/invites/delete") && request.method === "POST") {
       try {
         const code = url.searchParams.get("code");
-        await env.DB.prepare("DELETE FROM kutsukoodit WHERE koodi = ?").bind(code).run();
+        await env.HOLVI_DB.prepare("DELETE FROM kutsukoodit WHERE koodi = ?").bind(code).run();
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (e) {
         return new Response(JSON.stringify({ error: "Poisto epäonnistui." }), { status: 500, headers: corsHeaders });
@@ -61,18 +61,18 @@ export async function onRequest(context) {
     const { tunnus, salasana_hash, kutsukoodi } = await request.json();
     
     if (kutsukoodi !== "PAIVITYS_SALASANALLE") {
-      const koodiTarkistus = await env.DB.prepare(
+      const koodiTarkistus = await env.HOLVI_DB.prepare(
         "SELECT * FROM kutsukoodit WHERE koodi = ? AND kaytetty = 0"
       ).bind(kutsukoodi).first();
 
       if (!koodiTarkistus) {
         return new Response(JSON.stringify({ error: "Väärä tai jo käytetty kutsukoodi!" }), { status: 400, headers: corsHeaders });
       }
-      await env.DB.prepare("UPDATE kutsukoodit SET kaytetty = 1 WHERE koodi = ?").bind(kutsukoodi).run();
+      await env.HOLVI_DB.prepare("UPDATE kutsukoodit SET kaytetty = 1 WHERE koodi = ?").bind(kutsukoodi).run();
     }
 
     try {
-      await env.DB.prepare(
+      await env.HOLVI_DB.prepare(
         "INSERT INTO kayttajat (tunnus, salasana_hash, luotu_at) VALUES (?, ?, ?) ON CONFLICT(tunnus) DO UPDATE SET salasana_hash = ?"
       ).bind(tunnus.toLowerCase(), salasana_hash, NYKYHETKI, salasana_hash).run();
 
@@ -85,7 +85,7 @@ export async function onRequest(context) {
   // --- KIRJAUTUMINEN ---
   if (request.method === "POST" && url.pathname.endsWith("/kirjaudu")) {
     const { tunnus, salasana_hash } = await request.json();
-    const kayttaja = await env.DB.prepare(
+    const kayttaja = await env.HOLVI_DB.prepare(
       "SELECT * FROM kayttajat WHERE tunnus = ? AND salasana_hash = ?"
     ).bind(tunnus.toLowerCase(), salasana_hash).first();
 
@@ -99,7 +99,7 @@ export async function onRequest(context) {
   // --- TALLENTEIDEN HAKU ---
   if (request.method === "POST" && url.pathname.endsWith("/hae")) {
     const { omistaja } = await request.json();
-    const tallenteet = await env.DB.prepare(
+    const tallenteet = await env.HOLVI_DB.prepare(
       "SELECT id, palvelu, kayttaja, salattu_salasana FROM tallenteet WHERE omistaja = ? ORDER BY id DESC"
     ).bind(omistaja.toLowerCase()).all();
 
@@ -111,10 +111,10 @@ export async function onRequest(context) {
     const { id, palvelu, kayttaja, salattu_salasana, omistaja } = await request.json();
 
     if (id) {
-      await env.DB.prepare("UPDATE tallenteet SET palvelu=?, kayttaja=?, salattu_salasana=? WHERE id=? AND omistaja=?")
+      await env.HOLVI_DB.prepare("UPDATE tallenteet SET palvelu=?, kayttaja=?, salattu_salasana=? WHERE id=? AND omistaja=?")
         .bind(palvelu, kayttaja, salattu_salasana, id, omistaja.toLowerCase()).run();
     } else {
-      await env.DB.prepare("INSERT INTO tallenteet (palvelu, kayttaja, salattu_salasana, omistaja) VALUES (?, ?, ?, ?)")
+      await env.HOLVI_DB.prepare("INSERT INTO tallenteet (palvelu, kayttaja, salattu_salasana, omistaja) VALUES (?, ?, ?, ?)")
         .bind(palvelu, kayttaja, salattu_salasana, omistaja.toLowerCase()).run();
     }
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
@@ -123,7 +123,7 @@ export async function onRequest(context) {
   // --- YKSITTÄISEN SALASANAN POISTO ---
   if (request.method === "DELETE" && url.pathname.endsWith("/poista")) {
     const { id, omistaja } = await request.json();
-    await env.DB.prepare("DELETE FROM tallenteet WHERE id = ? AND omistaja = ?")
+    await env.HOLVI_DB.prepare("DELETE FROM tallenteet WHERE id = ? AND omistaja = ?")
       .bind(id, omistaja.toLowerCase()).run();
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
@@ -132,8 +132,8 @@ export async function onRequest(context) {
   if (request.method === "DELETE" && url.pathname.endsWith("/poista-tili")) {
     const { tunnus } = await request.json();
     const nimesi = tunnus.toLowerCase();
-    await env.DB.prepare("DELETE FROM tallenteet WHERE omistaja = ?").bind(nimesi).run();
-    await env.DB.prepare("DELETE FROM kayttajat WHERE tunnus = ?").bind(nimesi).run();
+    await env.HOLVI_DB.prepare("DELETE FROM tallenteet WHERE omistaja = ?").bind(nimesi).run();
+    await env.HOLVI_DB.prepare("DELETE FROM kayttajat WHERE tunnus = ?").bind(nimesi).run();
     return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
   }
 
