@@ -1,32 +1,53 @@
-const getCorsHeaders = (origin) => ({
-  "Access-Control-Allow-Origin": origin || "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-  "Access-Control-Allow-Credentials": "true"
-});
-
 export async function onRequest(context) {
   const { request, env } = context;
-  const origin = request.headers.get("Origin");
-  const corsHeaders = getCorsHeaders(origin);
-
-  // 1. Käsittele OPTIONS-pyynnöt (CORS pre-flight)
-  if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
-
   const url = new URL(request.url);
-  
-  // Luodaan apufunktio vastauksille
-  const respondJson = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  const respond = (body, status = 200) => new Response(body, { status, headers: corsHeaders });
 
-  // TESTI: Jos tämä toimii, API on pystyssä
-  if (url.pathname.endsWith("/api/test")) {
-    return respondJson({ status: "Lyhennin API toimii" });
+  // 1. Asetetaan CORS-otsakkeet, jotta selainlaajennus saa yhteyden
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
   }
 
-  // Tähän tulee myöhemmin lyhentimen varsinainen logiikka...
+  // 2. Testireitti
+  if (url.pathname.endsWith("/api/test")) {
+    return new Response(JSON.stringify({ status: "Lyhennin API toimii" }), { 
+      headers: { ...corsHeaders, "Content-Type": "application/json" } 
+    });
+  }
 
-  return respond("Not Found", 404);
+  // 3. Linkin luonti -reitti (tämä, jota popup.js kutsuu)
+  if (url.pathname.endsWith("/create")) {
+    const kohdeUrl = url.searchParams.get("url");
+    const koodi = url.searchParams.get("code") || Math.random().toString(36).substr(2, 6);
+    const salasana = url.searchParams.get("secret");
+
+    if (!kohdeUrl) {
+      return new Response(JSON.stringify({ error: "URL puuttuu" }), { 
+        status: 400, headers: corsHeaders 
+      });
+    }
+
+    try {
+      // Tallennetaan linkki "links"-tauluun
+      await env.LYHENNIN_DB.prepare(
+        "INSERT INTO links (short_code, original_url) VALUES (?, ?)"
+      ).bind(koodi, kohdeUrl).run();
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        shortUrl: `https://srla.fi/${koodi}` 
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Tallennus epäonnistui: " + e.message }), { 
+        status: 500, headers: corsHeaders 
+      });
+    }
+  }
+
+  return new Response("Not Found", { status: 404, headers: corsHeaders });
 }
