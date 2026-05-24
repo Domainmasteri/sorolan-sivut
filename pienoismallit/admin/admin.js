@@ -1,5 +1,5 @@
 // HUOM! Vaihda tähän uuden Workerisi osoite (sama kuin yllä)
-const API_BASE = 'https://pienoismallit.bannivasara.workers.dev';
+const API_BASE = '/api/pienoismallit';
 
 // 1. KIRJAUTUMINEN
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
