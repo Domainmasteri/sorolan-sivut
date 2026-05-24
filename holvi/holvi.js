@@ -1,4 +1,4 @@
-const API_URL = "https://sorolasalikset.bannivasara.workers.dev"; 
+const API_URL = 'https://sorola.fi/api/holvi/...';
 window.nykyinenAvain = null;
 let nykyinenKayttaja = "";
 let ladatutTallenteetRaw = [];
