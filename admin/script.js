@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const makenLohko = document.getElementById('maken-hallinta-lohko');
     const logoutBtn = document.getElementById('logout-btn');
 
-    const SRLA_API = 'https://srla.fi/api/admin';
-    const HOLVI_API = 'https://sorolasalikset.bannivasara.workers.dev/admin';
+    const SRLA_API = '/api/admin';
+    const HOLVI_API = '/api/holvi/admin';
 
     let currentUser = "";
     let currentHash = "";
