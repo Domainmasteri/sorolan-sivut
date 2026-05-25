@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const lomake = document.getElementById('lyhennin-lomake');
     const urlInput = lomake.querySelector('input[name="url"]');
-    const customCodeInput = lomake.querySelector('input[name="custom_code"]');
-    const secretInput = lomake.querySelector('input[name="secret"]');
     const tulosAlue = document.getElementById('tulos-alue');
     const lyhennettyUrl = document.getElementById('lyhennetty-url');
     const kopioiBtn = document.getElementById('kopioi-btn');
@@ -21,14 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!voiLahettaa) return;
 
         const alkuperainenUrl = urlInput.value.trim();
-        const kustomoituKoodi = customCodeInput ? customCodeInput.value.trim() : '';
-        const salasana = secretInput ? secretInput.value.trim() : '';
-        
-        // TARKISTUS: Jos salasana on annettu, mutta loppuosaa ei
-        if (salasana && !kustomoituKoodi) {
-            alert("Jos käytät salasanaa, kirjoita myös haluamasi oma loppuosa!");
-            return;
-        }
 
         // Laitetaan lukkoon käsittelyn ajaksi
         voiLahettaa = false;
@@ -36,16 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
         lahetaBtn.innerText = "Käsitellään...";
         
         try {
-            // Rakennetaan URL
-            let fetchUrl = `${WORKER_URL}?url=${encodeURIComponent(alkuperainenUrl)}`;
+            // Rakennetaan URL (vain kohde-osoite riittää)
+            const fetchUrl = `${WORKER_URL}?url=${encodeURIComponent(alkuperainenUrl)}`;
             
-            if (kustomoituKoodi) {
-                fetchUrl += `&code=${encodeURIComponent(kustomoituKoodi)}`;
-            }
-            if (salasana) {
-                fetchUrl += `&secret=${encodeURIComponent(salasana)}`;
-            }
-
             // Tehdään pyyntö Workerille
             const response = await fetch(fetchUrl);
             const data = await response.json();
@@ -54,16 +37,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 tulosAlue.style.display = 'block';
                 lyhennettyUrl.value = data.shortUrl;
                 
-                // Tyhjennetään kentät onnistumisen jälkeen
+                // Tyhjennetään kenttä onnistumisen jälkeen
                 urlInput.value = '';
-                if (customCodeInput) customCodeInput.value = '';
-                if (secretInput) secretInput.value = '';
             } else {
                 alert("Virhe: " + (data.error || "Linkin luonti epäonnistui"));
             }
         } catch (err) {
             console.error("Worker-virhe:", err);
-            alert("Virhe: Tarkista salasana tai onko kustomoitu koodi jo varattu.");
+            alert("Virhe yhteydessä palvelimeen. Yritä myöhemmin uudelleen.");
         } finally {
             // 5 SEKUNNIN SPÄMMIESTO JA AJASTIN
             let sekuntejaJaljella = 5;
