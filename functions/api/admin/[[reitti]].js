@@ -79,10 +79,10 @@ export async function onRequest(context) {
         console.error("Short.io -virhe:", e);
       }
 
-      const secrets = (await env.LYHENNIN_DB.prepare("SELECT * FROM api_secrets").all()).results || [];
       const adminInvites = (await env.LYHENNIN_DB.prepare("SELECT * FROM admin_invites").all()).results || [];
       const admins = (await env.LYHENNIN_DB.prepare("SELECT username FROM admins").all()).results || [];
-      return respond({ links: shortIoLinks, secrets, adminInvites, admins });
+      // Palautetaan data ilman secrets-osiota
+      return respond({ links: shortIoLinks, adminInvites, admins });
     }
 
     // Linkkien hallinta (Short.io)
@@ -132,17 +132,6 @@ export async function onRequest(context) {
       } catch (err) {
         return respond({ error: err.message }, 500);
       }
-    }
-
-    // Salasanojen hallinta (api_secrets)
-    if (endpoint === 'secrets/save' && request.method === 'POST') {
-      const data = await request.json();
-      await env.LYHENNIN_DB.prepare("INSERT INTO api_secrets (secret_code, remaining_uses) VALUES (?, ?) ON CONFLICT(secret_code) DO UPDATE SET remaining_uses = ?").bind(data.secret, data.uses, data.uses).run();
-      return respond({ success: true });
-    }
-    if (endpoint === 'secrets/delete' && request.method === 'POST') {
-      await env.LYHENNIN_DB.prepare("DELETE FROM api_secrets WHERE secret_code = ?").bind(url.searchParams.get('code')).run();
-      return respond({ success: true });
     }
 
     // Kutsukoodien hallinta
