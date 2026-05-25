@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const makenLohko = document.getElementById('maken-hallinta-lohko');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // KORJATTU: Käytetään suhteellisia polkuja Cloudflare Pages -funktioihin!
     const SRLA_API = '/api/admin';
     const HOLVI_API = '/api/holvi/admin';
 
@@ -132,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let holviInvites = [];
             try {
-                // KORJATTU: Lähetetään myös admin_user Holville!
                 const resHolvi = await fetch(`${HOLVI_API}/invites${authParams}`);
                 if (resHolvi.ok) {
                     const dataHolvi = await resHolvi.json();
@@ -141,12 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch(e) { console.error("Yhteysvirhe Holvi APIIN:", e); }
 
             adminSisalto.style.display = 'block';
-            paivitaTaulukot(dataSrla.links || [], dataSrla.secrets || [], dataSrla.adminInvites || [], holviInvites, dataSrla.admins || []);
+            paivitaTaulukot(dataSrla.links || [], dataSrla.adminInvites || [], holviInvites, dataSrla.admins || []);
         } catch (err) { alert(err.message); }
     }
 
     // --- TAULUKOIDEN RENDEROINTI ---
-    function paivitaTaulukot(links, secrets, adminInvites, holviInvites, adminsList) {
+    function paivitaTaulukot(links, adminInvites, holviInvites, adminsList) {
         const adminsBody = document.getElementById('admins-table-body');
         adminsBody.innerHTML = '';
         adminsList.forEach(a => {
@@ -163,27 +161,16 @@ document.addEventListener('DOMContentLoaded', () => {
         linksBody.innerHTML = '';
         links.forEach(l => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>/${l.short_code}</strong></td><td style="word-break:break-all;">${l.original_url}</td><td>${l.clicks || 0}</td>
+            tr.innerHTML = `<td><strong>/${l.short_code}</strong></td><td style="word-break:break-all;">${l.original_url}</td>
                 <td><button class="nappula nappi-pieni nappi-oranssi">Muokkaa</button> <button class="nappula nappi-pieni nappi-puna">Poista</button></td>`;
             tr.querySelector('.nappi-oranssi').onclick = () => {
-                document.getElementById('edit-old-code').value = l.idString; // Käytetään idStringiä editointiin
+                document.getElementById('edit-old-code').value = l.idString;
                 document.getElementById('link-code').value = l.short_code;
                 document.getElementById('link-url').value = l.original_url;
                 document.getElementById('peru-linkki-edit-btn').style.display = 'inline-block';
             };
             tr.querySelector('.nappi-puna').onclick = () => poistaTieto(`${SRLA_API}/links/delete`, l.idString, `linkki /${l.short_code}`);
             linksBody.appendChild(tr);
-        });
-
-        const secretsBody = document.getElementById('secrets-table-body');
-        secretsBody.innerHTML = '';
-        secrets.forEach(s => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><code>${s.secret_code}</code></td><td>${s.remaining_uses}</td><td>
-                <button class="nappula nappi-pieni" style="background:#0069d9;color:white;" onclick="document.getElementById('secret-code-input').value='${s.secret_code}';document.getElementById('secret-uses-input').value='${s.remaining_uses}';">Muokkaa</button>
-                <button class="nappula nappi-pieni nappi-puna">Poista</button></td>`;
-            tr.querySelector('.nappi-puna').onclick = () => poistaTieto(`${SRLA_API}/secrets/delete`, s.secret_code, `salasana ${s.secret_code}`);
-            secretsBody.appendChild(tr);
         });
 
         const adminBody = document.getElementById('admin-invites-table-body');
@@ -214,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('lisaa-linkki-btn').onclick = async () => {
-        const idString = document.getElementById('edit-old-code').value; // Poimii idStringin
+        const idString = document.getElementById('edit-old-code').value;
         const newCode = document.getElementById('link-code').value.trim();
         const url = document.getElementById('link-url').value.trim();
         
@@ -256,7 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lataaKaikkiTiedot();
     }
 
-    document.getElementById('tallenna-secret-btn').onclick = () => tallennaTieto(`${SRLA_API}/secrets/save`, { secret: document.getElementById('secret-code-input').value, uses: parseInt(document.getElementById('secret-uses-input').value) });
     document.getElementById('lisaa-admin-koodi-btn').onclick = () => tallennaTieto(`${SRLA_API}/admin_invites/add`, { code: document.getElementById('admin-koodi-input').value });
     
     document.getElementById('lisaa-holvi-koodi-btn').onclick = async () => {
