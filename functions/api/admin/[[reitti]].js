@@ -59,26 +59,79 @@ export async function onRequest(context) {
 
     // Listaus
     if (endpoint === 'list' && request.method === 'GET') {
-      const links = (await env.LYHENNIN_DB.prepare("SELECT * FROM links ORDER BY created_at DESC").all()).results || [];
+      let shortIoLinks = [];
+      try {
+        if (env.SHORT_IO_SECRET_KEY && env.SHORT_IO_DOMAIN_ID) {
+          const res = await fetch(`https://api.short.io/api/links?domain_id=${env.SHORT_IO_DOMAIN_ID}&limit=150`, {
+            headers: { "Authorization": env.SHORT_IO_SECRET_KEY }
+          });
+          const data = await res.json();
+          if (data.links) {
+            shortIoLinks = data.links.map(l => ({
+              idString: l.idString,
+              short_code: l.path,
+              original_url: l.originalURL,
+              clicks: l.clicks || 0
+            }));
+          }
+        }
+      } catch (e) {
+        console.error("Short.io -virhe:", e);
+      }
+
       const secrets = (await env.LYHENNIN_DB.prepare("SELECT * FROM api_secrets").all()).results || [];
       const adminInvites = (await env.LYHENNIN_DB.prepare("SELECT * FROM admin_invites").all()).results || [];
       const admins = (await env.LYHENNIN_DB.prepare("SELECT username FROM admins").all()).results || [];
-      return respond({ links, secrets, adminInvites, admins });
+      return respond({ links: shortIoLinks, secrets, adminInvites, admins });
     }
 
-    // Linkkien hallinta
+    // Linkkien hallinta (Short.io)
     if (endpoint === 'links/save' && request.method === 'POST') {
       const data = await request.json();
-      if (data.oldCode) {
-        await env.LYHENNIN_DB.prepare("UPDATE links SET short_code = ?, original_url = ? WHERE short_code = ?").bind(data.code, data.url, data.oldCode).run();
-      } else {
-        await env.LYHENNIN_DB.prepare("INSERT INTO links (short_code, original_url) VALUES (?, ?)").bind(data.code, data.url).run();
+      const payload = { originalURL: data.url };
+      if (data.code && data.code.trim() !== "") payload.path = data.code;
+
+      try {
+        if (data.idString) {
+          const upRes = await fetch(`https://api.short.io/links/${data.idString}`, {
+            method: 'POST',
+            headers: { "Authorization": env.SHORT_IO_SECRET_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!upRes.ok) {
+             const errData = await upRes.json();
+             return respond({ error: errData.error || "Päivitys epäonnistui Short.io:ssa" }, 400);
+          }
+        } else {
+          payload.domain = env.SHORT_IO_DOMAIN;
+          const newRes = await fetch(`https://api.short.io/links`, {
+            method: 'POST',
+            headers: { "Authorization": env.SHORT_IO_SECRET_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!newRes.ok) {
+             const errData = await newRes.json();
+             return respond({ error: errData.error || "Luonti epäonnistui Short.io:ssa" }, 400);
+          }
+        }
+        return respond({ success: true });
+      } catch (err) {
+        return respond({ error: err.message }, 500);
       }
-      return respond({ success: true });
     }
+
     if (endpoint === 'links/delete' && request.method === 'POST') {
-      await env.LYHENNIN_DB.prepare("DELETE FROM links WHERE short_code = ?").bind(url.searchParams.get('code')).run();
-      return respond({ success: true });
+      const idString = url.searchParams.get('code');
+      try {
+        const delRes = await fetch(`https://api.short.io/links/${idString}`, {
+          method: 'DELETE',
+          headers: { "Authorization": env.SHORT_IO_SECRET_KEY }
+        });
+        if (!delRes.ok) return respond({ error: "Poisto epäonnistui Short.io:ssa" }, 400);
+        return respond({ success: true });
+      } catch (err) {
+        return respond({ error: err.message }, 500);
+      }
     }
 
     // Salasanojen hallinta (api_secrets)
