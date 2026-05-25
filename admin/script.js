@@ -166,12 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `<td><strong>/${l.short_code}</strong></td><td style="word-break:break-all;">${l.original_url}</td><td>${l.clicks || 0}</td>
                 <td><button class="nappula nappi-pieni nappi-oranssi">Muokkaa</button> <button class="nappula nappi-pieni nappi-puna">Poista</button></td>`;
             tr.querySelector('.nappi-oranssi').onclick = () => {
-                document.getElementById('edit-old-code').value = l.short_code;
+                document.getElementById('edit-old-code').value = l.idString; // Käytetään idStringiä editointiin
                 document.getElementById('link-code').value = l.short_code;
                 document.getElementById('link-url').value = l.original_url;
                 document.getElementById('peru-linkki-edit-btn').style.display = 'inline-block';
             };
-            tr.querySelector('.nappi-puna').onclick = () => poistaTieto(`${SRLA_API}/links/delete`, l.short_code, `linkki /${l.short_code}`);
+            tr.querySelector('.nappi-puna').onclick = () => poistaTieto(`${SRLA_API}/links/delete`, l.idString, `linkki /${l.short_code}`);
             linksBody.appendChild(tr);
         });
 
@@ -214,14 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.getElementById('lisaa-linkki-btn').onclick = async () => {
-        const oldCode = document.getElementById('edit-old-code').value;
+        const idString = document.getElementById('edit-old-code').value; // Poimii idStringin
         const newCode = document.getElementById('link-code').value.trim();
         const url = document.getElementById('link-url').value.trim();
-        if(!newCode || !url) return alert("Täytä molemmat kentät!");
+        
+        if(!url) return alert("Täytä vähintään kohde-URL!");
 
         const res = await fetch(`${SRLA_API}/links/save?admin_user=${encodeURIComponent(currentUser)}&admin_hash=${encodeURIComponent(currentHash)}`, {
             method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ oldCode, code: newCode, url })
+            body: JSON.stringify({ idString, code: newCode, url })
         });
         if (res.ok) {
             document.getElementById('edit-old-code').value = '';
@@ -231,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lataaKaikkiTiedot();
         } else {
             const errData = await res.json();
-            alert("Virhe: " + (errData.error || "Koodi on varattu"));
+            alert("Virhe: " + (errData.error || "Koodi on varattu tai ilmeni muu ongelma"));
         }
     };
 
