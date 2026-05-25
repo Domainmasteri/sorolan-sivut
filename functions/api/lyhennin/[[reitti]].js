@@ -4,12 +4,13 @@ export async function onRequest(context) {
   
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   };
 
   if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Tunnistetaan kutsu
   if (url.pathname.includes("/create")) {
     const kohdeUrl = url.searchParams.get("url");
     let koodi = url.searchParams.get("code");
@@ -26,16 +27,13 @@ export async function onRequest(context) {
       return new Response(JSON.stringify({ error: "Palvelimen asetukset puuttuvat (Short.io avaimet)" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Peruspaketti Short.iolle
     const payload = {
       domain: shortDomain,
       originalURL: kohdeUrl
     };
 
-    // Jos koodia ei anneta, Short.io tekee automaattisesti random tunnuksen!
+    // Jos koodia ei ole annettu, Short.io luo satunnaisen tunnuksen automaattisesti
     if (koodi && koodi.trim() !== "") payload.path = koodi.trim();
-    
-    // Suojataan linkki salasanalla, jos sellainen on annettu lomakkeessa
     if (salasana && salasana.trim() !== "") payload.password = salasana.trim();
 
     try {
