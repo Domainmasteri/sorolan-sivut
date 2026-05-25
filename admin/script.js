@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
 
     const SRLA_API = '/api/admin';
-    const HOLVI_API = '/api/holvi/admin';
 
     let currentUser = "";
     let currentHash = "";
@@ -129,22 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentUser.toLowerCase() === 'make') makenLohko.style.display = 'block';
             else makenLohko.style.display = 'none';
 
-            let holviInvites = [];
-            try {
-                const resHolvi = await fetch(`${HOLVI_API}/invites${authParams}`);
-                if (resHolvi.ok) {
-                    const dataHolvi = await resHolvi.json();
-                    holviInvites = dataHolvi.invites || [];
-                }
-            } catch(e) { console.error("Yhteysvirhe Holvi APIIN:", e); }
-
             adminSisalto.style.display = 'block';
-            paivitaTaulukot(dataSrla.links || [], dataSrla.adminInvites || [], holviInvites, dataSrla.admins || []);
+            paivitaTaulukot(dataSrla.links || [], dataSrla.adminInvites || [], dataSrla.admins || []);
         } catch (err) { alert(err.message); }
     }
 
     // --- TAULUKOIDEN RENDEROINTI ---
-    function paivitaTaulukot(links, adminInvites, holviInvites, adminsList) {
+    function paivitaTaulukot(links, adminInvites, adminsList) {
         const adminsBody = document.getElementById('admins-table-body');
         adminsBody.innerHTML = '';
         adminsList.forEach(a => {
@@ -180,23 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `<td><code>${a.code}</code></td><td>${a.created_by}</td><td><button class="nappula nappi-pieni nappi-puna">Poista</button></td>`;
             tr.querySelector('button').onclick = () => poistaTieto(`${SRLA_API}/admin_invites/delete`, a.code, `admin-koodi ${a.code}`);
             adminBody.appendChild(tr);
-        });
-
-        const holviBody = document.getElementById('holvi-table-body');
-        holviBody.innerHTML = '';
-        holviInvites.forEach(item => {
-            const code = typeof item === 'object' ? (item.koodi || item.code) : item;
-            const onkoKaytetty = typeof item === 'object' && parseInt(item.kaytetty) === 1;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><code>${code}</code></td>
-                <td>${onkoKaytetty ? '<span style="color: #ff4d4d; font-weight: bold;">Käytetty</span>' : '<span style="color: #2ed573; font-weight: bold;">Vapaa</span>'}</td>
-                <td><button class="nappula nappi-pieni nappi-puna">Poista</button></td>`;
-            tr.querySelector('button').onclick = async () => {
-                if (!confirm(`Poistetaanko Holvin kutsukoodi ${code}?`)) return;
-                await fetch(`${HOLVI_API}/invites/delete?admin_user=${encodeURIComponent(currentUser)}&admin_hash=${encodeURIComponent(currentHash)}&code=${code}`, { method: 'POST' });
-                lataaKaikkiTiedot();
-            };
-            holviBody.appendChild(tr);
         });
     }
 
@@ -245,13 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('lisaa-admin-koodi-btn').onclick = () => tallennaTieto(`${SRLA_API}/admin_invites/add`, { code: document.getElementById('admin-koodi-input').value });
     
-    document.getElementById('lisaa-holvi-koodi-btn').onclick = async () => {
-        const code = document.getElementById('holvi-koodi-input').value.trim();
-        if(!code) return alert("Syötä koodi!");
-        await tallennaTieto(`${HOLVI_API}/invites/add`, { code });
-        document.getElementById('holvi-koodi-input').value = '';
-    };
-
     if (sessionStorage.getItem("admin_user") && sessionStorage.getItem("admin_hash")) {
         currentUser = sessionStorage.getItem("admin_user");
         currentHash = sessionStorage.getItem("admin_hash");
