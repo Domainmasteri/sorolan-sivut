@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lahetaBtn = lomake.querySelector('button[type="submit"]');
 
     // OMA WORKER-OSOITTEESI
-    const WORKER_URL = 'https://sorola.fi/api/lyhennin/create';
+    const WORKER_URL = '/api/lyhennin/create';
 
     // Spämmieston muuttuja
     let voiLahettaa = true;
