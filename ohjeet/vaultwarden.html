@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Vaultwarden-ohje - Sorolan Pilvi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
+    <link rel="icon" type="image/x-icon" href="../tyylit/fav.ico">
+</head>
+<body>
+
+<div class="laatikko">
+    <h1 class="otsikko">🔒 Vaultwarden-ohje</h1>
+
+    <div class="osion-tausta" style="text-align:center;">
+        <p style="margin:0;">
+            Vaultwarden on Sorolan palvelimella pyörivä turvallinen salasanaholvi. Tässä ohjeessa käydään läpi holvin peruskäyttö, jotta salasanasi pysyvät tallessa ja helposti saatavilla.
+        </p>
+    </div>
+
+    <div class="osion-tausta">
+        <h2 style="margin-top:0;color:#ffaa00;">🌐 Miten holviin pääsee?</h2>
+        <p>Holvi sijaitsee Sorolan palvelimella osoitteessa <strong>vault.sorola.fi</strong>. Koska palvelu on tarkoitettu vain kutsutuille, sinulla tulee olla valmiiksi luotu tili tai kutsu ylläpidolta.</p>
+        <ol>
+            <li>Mene selaimella osoitteeseen <strong><a href="https://vault.sorola.fi" style="color:#ffaa00; text-decoration:none;">https://vault.sorola.fi</a></strong>.</li>
+            <li>Kirjaudu sisään sähköpostiosoitteellasi ja pääsalasanallasi (Master Password).</li>
+            <li><strong>Tärkeää:</strong> Älä koskaan unohda pääsalasanaasi, sillä ylläpito ei voi palauttaa sitä!</li>
+        </ol>
+    </div>
+
+    <div class="osion-tausta">
+        <h2 style="margin-top:0;color:#ffaa00;">➕ Tietueen luonti</h2>
+        <p>Uuden salasanan tai tiedon tallentaminen onnistuu helposti:</p>
+        <ol>
+            <li>Kirjaudu sisään holviin.</li>
+            <li>Paina <strong>Lisää kohde</strong> (Add item) -painiketta.</li>
+            <li>Valitse tyypiksi <strong>Kirjautuminen</strong> (Login).</li>
+            <li>Täytä vähintään <strong>Nimi</strong> (esim. Facebook), <strong>Käyttäjätunnus</strong>, <strong>Salasana</strong> ja <strong>URI</strong> (esim. https://facebook.com).</li>
+            <li>Paina <strong>Tallenna</strong> (Save).</li>
+        </ol>
+    </div>
+
+    <div class="osion-tausta">
+        <h2 style="margin-top:0;color:#ffaa00;">⚡ Automaattinen täyttö (Selainlaajennus)</h2>
+        <p>Helpoin tapa käyttää Vaultwardenia on asentaa Bitwarden-selainlaajennus, joka täyttää salasanat puolestasi.</p>
+        <ol>
+            <li>Lataa <strong>Bitwarden</strong>-laajennus selaimesi lisäosakaupasta (Chrome, Firefox, Edge).</li>
+            <li>Avaa laajennus ja paina <strong>Asetukset</strong> (rataskuvake) <strong>ennen</strong> kirjautumista.</li>
+            <li>Etsi kohta <strong>Palvelimen URL-osoite</strong> (Server URL) ja syötä siihen: <code style="word-break: break-all;">https://vault.sorola.fi</code></li>
+            <li>Tallenna asetukset ja kirjaudu sisään laajennukseen. Nyt se ehdottaa salasanoja automaattisesti tallennetuilla sivuilla!</li>
+        </ol>
+    </div>
+
+    <div class="osion-tausta">
+        <h2 style="margin-top:0;color:#ffaa00;">✏️ Muokkaaminen ja poistaminen</h2>
+        <ul>
+            <li><strong>Muokkaus:</strong> Klikkaa haluamaasi tietuetta listasta ja valitse <strong>Muokkaa</strong> (Edit). Tee tarvittavat muutokset ja tallenna.</li>
+            <li style="margin-top: 10px;"><strong>Poisto:</strong> Avaa tietue, vieritä aivan alas ja valitse <strong>Poista</strong> (Delete). Poistettu kohde siirtyy roskakoriin, josta se poistetaan lopullisesti myöhemmin (voit myös tyhjentää roskakorin itse).</li>
+        </ul>
+    </div>
+
+    <div class="osion-tausta">
+        <h2 style="margin-top:0;color:#ffaa00;">🔄 Tietojen tuominen ja vieminen</h2>
+        <p>Voit siirtää salasanoja toisesta palvelusta tai ottaa niistä varmuuskopion.</p>
+        <ul>
+            <li><strong>Tuominen (Import):</strong> Valitse ylävalikosta <strong>Työkalut</strong> (Tools) &rarr; <strong>Tuo tietoja</strong> (Import Data). Valitse haluamasi tiedostomuoto (esim. Bitwarden, Chrome tai LastPass) ja lataa tiedosto koneeltasi.</li>
+            <li style="margin-top: 10px;"><strong>Vieminen (Export):</strong> Valitse <strong>Työkalut</strong> &rarr; <strong>Vie holvi</strong> (Export Vault). Voit ladata holvisi sisällön salattuna <code>.json</code>-tiedostona tai selkokielisenä <code>.csv</code>-tiedostona. <strong>Varoitus:</strong> Käsittele selkokielistä <code>.csv</code>-tiedostoa erittäin varovasti, sillä salasanat näkyvät siinä salaamattomina!</li>
+        </ul>
+    </div>
+
+    <div class="osion-tausta" style="text-align:center;">
+        <a href="../ohjeet/" class="nappula1">⬅ Takaisin ohjeisiin</a>
+    </div>
+
+</div>
+
+</body>
+</html>
