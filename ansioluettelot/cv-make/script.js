@@ -1,6 +1,6 @@
 function generatePDF() {
-    // Kohdistetaan nyt koko kääreeseen, joka sisältää kaikki sivut
-    const element = document.getElementById('cv-wrapper');
+    // Kohdistetaan takaisin yksittäiseen sivulokeroon
+    const element = document.getElementById('cv');
     
     // Piilotetaan painike tulostuksen ajaksi
     const btn = document.querySelector('.btn-download');
@@ -17,7 +17,7 @@ function generatePDF() {
 
     // Luodaan PDF
     html2pdf().set(opt).from(element).save().then(() => {
-        // Palautetaan nappi näkyviin heti latauksen alettua
+        // Palautetaan nappi
         btn.style.display = 'block';
     });
 }
