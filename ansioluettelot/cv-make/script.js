@@ -1,12 +1,12 @@
 function generatePDF() {
-    // Kohdistetaan itse ansioluettelon alueeseen (id="cv")
-    const element = document.getElementById('cv');
+    // Kohdistetaan nyt koko kääreeseen, joka sisältää kaikki sivut
+    const element = document.getElementById('cv-wrapper');
     
     // Piilotetaan painike tulostuksen ajaksi
     const btn = document.querySelector('.btn-download');
     btn.style.display = 'none';
 
-    // PDF-asetukset (A4-koko ja laadukas kuvaus)
+    // PDF-asetukset
     const opt = {
         margin:       0,
         filename:     'Markus_Sorola_CV.pdf',
@@ -15,8 +15,9 @@ function generatePDF() {
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Luodaan PDF ja palautetaan nappi näkyviin heti sen jälkeen
+    // Luodaan PDF
     html2pdf().set(opt).from(element).save().then(() => {
+        // Palautetaan nappi näkyviin heti latauksen alettua
         btn.style.display = 'block';
     });
 }
