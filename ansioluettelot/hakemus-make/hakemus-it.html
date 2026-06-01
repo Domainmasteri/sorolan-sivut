@@ -9,17 +9,16 @@
 </head>
 <body>
 
-<button class="btn-download" onclick="generatePDF('Markus_Sorola_Tyohakemus_IT.pdf')">Lataa PDF</button>
+<button class="btn-download" onclick="generatePDF('Markus_Sorola_Avoin_Hakemus_IT.pdf')">Lataa PDF</button>
 
 <div class="hakemus-container" id="hakemus">
     
     <div class="sidebar">
         <h2>Markus Sorola</h2>
-        <p class="title">Työhakemus</p>
+        <p class="title">Avoin hakemus</p>
         
         <h3>Yhteystiedot</h3>
         <p><strong>Sähköposti:</strong><br><a href="mailto:markus@sorola.fi">markus@sorola.fi</a></p>
-        <p><strong>Puhelin:</strong><br>[Puhelinnumero]</p>
         <p><strong>Paikkakunta:</strong><br>Salo</p>
         <p><strong>Verkkosivu:</strong><br><a href="https://sorola.fi" target="_blank">sorola.fi</a></p>
 
@@ -28,24 +27,18 @@
     </div>
 
     <div class="main-content">
-        <div class="letter-header">
-            <div class="recipient-info">
-                <strong>[Yrityksen Nimi]</strong><br>
-                [Vastaanottajan nimi / Rekrytointi]<br>
-                [Osoite]<br>
-                [Postinumero ja paikkakunta]
-            </div>
+        <div class="letter-header" style="justify-content: flex-end;">
             <div class="date-info">
                 Salo, <span id="current-date"></span>
             </div>
         </div>
 
-        <h1 class="application-title">Työhakemus: [Haettavan tehtävän nimike] – Itseohjautuva verkkoteknologioiden ja infran osaaja</h1>
+        <h1 class="application-title">Avoin työhakemus – Itseohjautuva verkkoteknologioiden ja infran osaaja</h1>
 
         <div class="letter-body">
-            <p>Hyvä [Vastaanottajan nimi / Rekrytointitiimi],</p>
+            <p>Hyvä rekrytoija,</p>
             
-            <p>Kirjoitan hakeakseni [haettavan tehtävän nimike] paikkaa yrityksessänne. Olen tavoitteellinen ja vahvan loogisen ongelmanratkaisukyvyn omaava tekijä, jolle nykyaikaiset verkkoteknologiat ja infrastruktuurin ylläpito ovat paitsi osaamisen ydintä, myös suuri intohimo.</p>
+            <p>Lähetän teille tämän avoimen hakemuksen, sillä etsin uusia haasteita alan parista ja olen erittäin kiinnostunut yrityksenne toiminnasta. Olen tavoitteellinen ja vahvan loogisen ongelmanratkaisukyvyn omaava tekijä, jolle nykyaikaiset verkkoteknologiat ja infrastruktuurin ylläpito ovat paitsi osaamisen ydintä, myös suuri intohimo.</p>
             
             <p>Olen suunnitellut ja rakentanut täysin itsenäisesti kattavan verkkoinfrastruktuurin omien domainieni ympärille. Hallitsen sujuvasti frontend- ja backend-kehityksen (HTML, CSS, JavaScript, PHP) ja ymmärrän syvällisesti, miten järjestelmät keskustelevat keskenään. Kehitystyön lisäksi vastaan oman palvelinympäristöni pystyttämisestä ja ylläpidosta (esim. VPS-ratkaisut ja pilvitallennus) sekä versionhallinnasta GitHubin kautta. Tietoturva, yksityisyydensuoja ja prosessien automatisointi ovat minulle selkärangassa olevia toimintatapoja, eivätkä vain päälle liimattuja ominaisuuksia.</p>
             
@@ -70,5 +63,6 @@
     </div>
 </div>
 <script src="script-hakemus.js"></script>
+
 </body>
 </html>
