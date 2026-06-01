@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Työhakemus - Markus Sorola</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="style-hakemus.css">
+</head>
+<body>
+
+<button class="btn-download" onclick="generatePDF()">Lataa PDF</button>
+
+<div class="hakemus-container" id="hakemus">
+    
+    <div class="sidebar">
+        <h2>Markus Sorola</h2>
+        <p class="title">Työhakemus</p>
+        
+        <h3>Yhteystiedot</h3>
+        <p><strong>Sähköposti:</strong><br><a href="mailto:markus@sorola.fi">markus@sorola.fi</a></p>
+        <p><strong>Puhelin:</strong><br>[Puhelinnumero]</p>
+        <p><strong>Paikkakunta:</strong><br>Salo</p>
+        <p><strong>Verkkosivu:</strong><br><a href="https://sorola.fi" target="_blank">sorola.fi</a></p>
+
+        <h3>Tekninen Stack</h3>
+        <p>• HTML5 & CSS3<br>• JavaScript & PHP<br>• Linux VPS / Cloud Infra<br>• Git / GitHub / CI-CD<br>• Tietoturva & Automatisointi</p>
+    </div>
+
+    <div class="main-content">
+        <div class="letter-header">
+            <div class="recipient-info">
+                <strong>[Yrityksen Nimi]</strong><br>
+                [Vastaanottajan nimi / Rekrytointi]<br>
+                [Osoite]<br>
+                [Postinumero ja paikkakunta]
+            </div>
+            <div class="date-info">
+                Salo, <span id="current-date"></span>
+            </div>
+        </div>
+
+        <h1 class="application-title">Työhakemus: [Haettavan tehtävän nimike] – Itseohjautuva verkkoteknologioiden ja infran osaaja</h1>
+
+        <div class="letter-body">
+            <p>Hyvä [Vastaanottajan nimi / Rekrytointitiimi],</p>
+            
+            <p>Kirjoitan hakeakseni [haettavan tehtävän nimike] paikkaa yrityksessänne. Olen tavoitteellinen ja vahvan loogisen ongelmanratkaisukyvyn omaava tekijä, jolle nykyaikaiset verkkoteknologiat ja infrastruktuurin ylläpito ovat paitsi osaamisen ydintä, myös suuri intohimo.</p>
+            
+            <p>Olen suunnitellut ja rakentanut täysin itsenäisesti kattavan verkkoinfrastruktuurin omien domainieni ympärille. Hallitsen sujuvasti frontend- ja backend-kehityksen (HTML, CSS, JavaScript, PHP) ja ymmärrän syvällisesti, miten järjestelmät keskustelevat keskenään. Kehitystyön lisäksi vastaan oman palvelinympäristöni pystyttämisestä ja ylläpidosta (esim. VPS-ratkaisut ja pilvitallennus) sekä versionhallinnasta GitHubin kautta. Tietoturva, yksityisyydensuoja ja prosessien automatisointi ovat minulle selkärangassa olevia toimintatapoja, eivätkä vain päälle liimattuja ominaisuuksia.</p>
+            
+            <p>Mitä tuon mukanani tiimiin:</p>
+            <ul>
+                <li><strong>Vahva tekninen pohja:</strong> Kyky rakentaa ja ylläpitää verkkopalveluita palvelintasolta käyttöliittymään saakka.</li>
+                <li><strong>Looginen päättelykyky:</strong> Nautin monimutkaisten ongelmien purkamisesta ja koodin optimoinnista.</li>
+                <li><strong>Käytännönläheinen asenne:</strong> Ymmärrän miten asiat koodataan, ja miten ne pidetään turvallisesti pystyssä.</li>
+            </ul>
+            
+            <p>Varhaisjakelijan taustani on opettanut minulle täsmällisyyttä ja kykyä viedä asiat maaliin aikataulussa – ominaisuuksia, joista on valtavasti hyötyä myös vaativissa IT-projekteissa.</p>
+            
+            <p>Keskustelisin erittäin mielelläni lisää siitä, miten tekninen osaamiseni vastaisi yrityksenne tarpeita.</p>
+        </div>
+
+        <div class="letter-footer">
+            <p>Ystävällisin terveisin,</p>
+            <div class="signature">
+                Markus Sorola
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Päivämäärän haku automaattisesti
+    const d = new Date();
+    document.getElementById('current-date').innerText = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
+
+    function generatePDF() {
+        const element = document.getElementById('hakemus');
+        const btn = document.querySelector('.btn-download');
+        
+        btn.style.display = 'none';
+        element.style.margin = '0';
+        element.style.boxShadow = 'none';
+
+        const opt = {
+            margin:       0,
+            filename:     'Markus_Sorola_Tyohakemus_IT.pdf',
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            btn.style.display = 'block';
+            element.style.margin = '2rem auto';
+            element.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        });
+    }
+</script>
+</body>
+</html>
