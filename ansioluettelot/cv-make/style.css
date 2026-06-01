@@ -11,7 +11,7 @@ body {
     line-height: 1.5; 
 }
 
-/* CV:n pääkehys (vastaa A4-kokoa) */
+/* Yhden sivun A4-kehys */
 .cv-container { 
     width: 210mm; 
     min-height: 297mm; 
@@ -28,6 +28,16 @@ body {
     color: #fff; 
     padding: 2.5rem 1.5rem; 
 }
+/* UUSI SÄÄNTÖ: Linkkien tyylit vihreässä palkissa */
+.sidebar a {
+    color: #fff;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+.sidebar a:hover {
+    opacity: 0.8;
+}
+
 .profile-pic { 
     width: 160px; 
     height: 160px; 
@@ -118,8 +128,16 @@ body {
     background: #3a6b41; 
 }
 
+/* HTML2PDF sivunvaihto (Varmistus, että leikkaus toimii selaimessa visuaalisesti) */
+.html2pdf__page-break {
+    height: 0;
+    margin: 0;
+    padding: 0;
+    page-break-before: always;
+}
+
 @media (max-width: 768px) {
-    .cv-container { width: 100%; min-height: auto; flex-direction: column; }
+    .cv-container { width: 100%; min-height: auto; flex-direction: column; margin-bottom: 2rem; }
     .sidebar { width: 100%; }
     .main-content { width: 100%; }
     .btn-download { position: static; display: block; width: 100%; border-radius: 0; }
