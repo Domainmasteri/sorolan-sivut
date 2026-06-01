@@ -8,18 +8,18 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     background: #e9ecef; 
     color: #333; 
-    line-height: 1.4; /* Pienennetty riviväliä */
+    line-height: 1.4; 
 }
 
-/* Yhden sivun A4-kehys - lukittu mittoihin */
+/* Yhden sivun A4-kehys - Pienennetty 1mm tyhjän sivun estämiseksi! */
 .cv-container { 
     width: 210mm; 
-    height: 297mm; /* Tiukka A4-korkeus estää sivunvaihtojen sekoilun */
+    height: 296mm; 
     background: #fff; 
     margin: 2rem auto; 
     display: flex; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-    overflow: hidden; /* Leikkaa kaiken mikä yrittää pursuta yli */
+    overflow: hidden; 
 }
 
 /* Vihreä sivupalkki (Vasemmalla) */
@@ -27,7 +27,7 @@ body {
     width: 35%; 
     background: #4a8c53; 
     color: #fff; 
-    padding: 2rem 1.5rem; /* Pienennetty paddingia */
+    padding: 2rem 1.5rem; 
 }
 .sidebar a {
     color: #fff;
@@ -39,7 +39,7 @@ body {
 }
 
 .profile-pic { 
-    width: 130px; /* Pienennetty kuvaa hieman */
+    width: 130px; 
     height: 130px; 
     background: #fff; 
     border-radius: 50%; 
@@ -62,7 +62,7 @@ body {
     padding-bottom: 0.2rem;
 }
 .sidebar p, .sidebar ul { 
-    font-size: 0.9rem; /* Pienennetty fonttia hieman */
+    font-size: 0.9rem; 
     margin-bottom: 0.4rem; 
 }
 .sidebar ul { 
@@ -75,10 +75,10 @@ body {
 /* Pääsisältö (Oikealla) */
 .main-content { 
     width: 65%; 
-    padding: 2.5rem 2.5rem; /* Pienennetty paddingia */
+    padding: 2.5rem 2.5rem; 
 }
 .main-content h1 { 
-    font-size: 2.4rem; /* Pienennetty otsikkoa */
+    font-size: 2.4rem; 
     color: #333; 
     margin-bottom: 1.2rem; 
 }
@@ -105,7 +105,7 @@ body {
     font-size: 0.9rem; 
 }
 .item-desc { 
-    font-size: 0.9rem; /* Pienennetty kuvaustekstien fonttia */
+    font-size: 0.9rem; 
 }
 
 /* PDF-Latauspainike */
@@ -129,7 +129,7 @@ body {
 }
 
 @media (max-width: 768px) {
-    .cv-container { width: 100%; height: auto; min-height: 297mm; flex-direction: column; }
+    .cv-container { width: 100%; height: auto; min-height: 296mm; flex-direction: column; }
     .sidebar { width: 100%; }
     .main-content { width: 100%; }
     .btn-download { position: static; display: block; width: 100%; border-radius: 0; }
