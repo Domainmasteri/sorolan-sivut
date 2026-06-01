@@ -67,34 +67,7 @@
         </div>
     </div>
 </div>
+<script src="script-hakemus.js"></script>
 
-<script>
-    // Päivämäärän haku automaattisesti
-    const d = new Date();
-    document.getElementById('current-date').innerText = `${d.getDate()}.${d.getMonth() + 1}.${d.getFullYear()}`;
-
-    function generatePDF() {
-        const element = document.getElementById('hakemus');
-        const btn = document.querySelector('.btn-download');
-        
-        btn.style.display = 'none';
-        element.style.margin = '0';
-        element.style.boxShadow = 'none';
-
-        const opt = {
-            margin:       0,
-            filename:     'Markus_Sorola_Tyohakemus_Logistiikka.pdf',
-            image:        { type: 'jpeg', quality: 1.0 },
-            html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            btn.style.display = 'block';
-            element.style.margin = '2rem auto';
-            element.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-        });
-    }
-</script>
 </body>
 </html>
