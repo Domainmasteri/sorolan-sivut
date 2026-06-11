@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sorolan Sakki - Hallintapaneeli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
+    <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
+</head>
+<body>
+
+    <div class="laatikko" style="max-width: 800px;">
+        <h1 class="otsikko">Hallintapaneeli</h1>
+
+        <div id="login-section" class="admin-section">
+            <h2>Kirjaudu Sisään</h2>
+            <div class="flex-form">
+                <input type="text" id="username" class="syote" placeholder="Käyttäjätunnus">
+                <input type="password" id="password" class="syote" placeholder="Salasana">
+                <button onclick="kirjaudu()" class="nappula">Kirjaudu</button>
+            </div>
+            <p id="login-error" style="color: #ef4444; font-size: 0.9rem; display: none;">Virheellinen tunnus tai salasana.</p>
+        </div>
+
+        <div id="dashboard-section" style="display: none;">
+            
+            <div class="admin-section">
+                <h2>🔗 Uusi soro.la linkki</h2>
+                <div class="flex-form">
+                    <input type="text" id="original-url" class="syote" placeholder="Alkuperäinen pitkä URL (https://...)">
+                    <input type="text" id="short-path" class="syote" placeholder="Haluttu lyhenne (esim. 'make')">
+                    <button onclick="luoLinkki()" class="nappula nappi-oranssi">Luo Linkki</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>Hallinnoi linkkejä</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Lyhytosoite</th>
+                            <th>Kohdeosoite</th>
+                            <th>Toiminnot</th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table-body">
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #a0aec0;">Ladataan linkkejä...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <a href="#" onclick="kirjauduUlos()" class="linkki-takaisin">Kirjaudu ulos</a>
+        </div>
+
+        <a href="../" class="linkki-takaisin">← Takaisin etusivulle</a>
+    </div>
+
+    <script>
+        // HUOM: Tämä on vain frontendin koodia.
+        // API-kutsut on ohjattava omalle backendillesi (esim. Cloudflare Worker),
+        // joka pitää sisällään D1-tietokantayhteyden ja SHORT_IO_SECRET_KEY:n.
+
+        function kirjaudu() {
+            // Tässä kohtaa tekisit fetch-kutsun backendisi kirjautumisreitille.
+            // Esimerkkilogiikka testaukseen:
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('dashboard-section').style.display = 'block';
+            lataaLinkit();
+        }
+
+        function kirjauduUlos() {
+            document.getElementById('dashboard-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+        }
+
+        async function lataaLinkit() {
+            /* Tässä tekisit GET-kutsun omalle backendillesi, joka hakee tiedot short.io:sta:
+            const response = await fetch('/api/get-links', { headers: { 'Authorization': 'Bearer ' + token } });
+            */
+           
+            const tableBody = document.getElementById('links-table-body');
+            // Mock-dataa ulkoasun testaamiseen
+            tableBody.innerHTML = `
+                <tr>
+                    <td>soro.la/esimerkki</td>
+                    <td>https://google.com</td>
+                    <td>
+                        <button class="nappula nappi-pieni nappi-puna" onclick="poistaLinkki('id123')">Poista</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        async function luoLinkki() {
+            const original = document.getElementById('original-url').value;
+            const path = document.getElementById('short-path').value;
+            
+            /* Tässä tekisit POST-kutsun omalle backendillesi, joka ohjaa sen short.io:lle:
+            await fetch('/api/create-link', {
+                method: 'POST',
+                body: JSON.stringify({ originalUrl: original, path: path })
+            });
+            */
+            alert("Kutsu menisi backendille: Luo " + path + " -> " + original);
+        }
+
+        async function poistaLinkki(id) {
+            if(confirm('Haluatko varmasti poistaa tämän linkin?')) {
+                // DELETE-kutsu backendille
+                alert("Poistetaan linkki ID: " + id);
+            }
+        }
+    </script>
+</body>
+</html>
