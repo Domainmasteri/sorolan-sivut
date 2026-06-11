@@ -1,126 +1,49 @@
-// Aputoiminto salasanan hajauttamiseen
-async function luoHash(teksti) {
-    const msgBuffer = new TextEncoder().encode(teksti);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+```javascript
+// Tämä tiedosto nappaa kaikki sivustolle tulevat pyynnöt (catch-all).
+// Esim. soro.la/esimerkki saapuu tänne, jos staattista /esimerkki kansiota tai tiedostoa ei löydy.
 
-// Aputoiminto valtuutuksen tarkistamiseen (D1 kanta ja base64 koodattu token)
-async function tarkistaValtuutus(request, env) {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
-    
+export async function onRequestGet(context) {
+    const { request, env, params, next } = context;
+
+    // Haetaan URL-polku (params.path on array)
+    const pathArray = params.path;
+    if (!pathArray || pathArray.length === 0) {
+        // Pääsivu soro.la/ -> annetaan Pagesin näyttää index.html normaalisti
+        return next();
+    }
+
+    // Yhdistetään taulukko takaisin poluksi, esim. "make"
+    const shortPath = pathArray.join('/');
+
+    // Jos yritetään hakea fyysisiä tiedostoja (kuten tyylit/pohja.css), annetaan mennä ohi
+    if (shortPath.startsWith('tyylit/') || shortPath.startsWith('admin/') || shortPath.startsWith('api/')) {
+        return next();
+    }
+
     try {
-        const base64Token = authHeader.split(" ")[1];
-        // Dekoodataan base64 (muotoa tunnus:salasana)
-        const purettu = atob(base64Token);
-        const [username, password] = purettu.split(":");
+        // Etsitään lyhennettä tietokannasta
+        const result = await env.DB.prepare("SELECT original_url FROM links WHERE short_path = ?").bind(shortPath).first();
         
-        if (!username || !password) return false;
-        
-        const passHash = await luoHash(password);
-        const result = await env.DB.prepare(
-            "SELECT id FROM users WHERE username = ? AND password_hash = ?"
-        ).bind(username, passHash).first();
-        
-        return !!result;
+        if (result && result.original_url) {
+            // Linkki löytyi! Tehdään 302 uudelleenohjaus kohdeosoitteeseen
+            return Response.redirect(result.original_url, 302);
+        }
     } catch (e) {
-        return false;
+        // Tietokantavirheen sattuessa sivuutetaan se hiljaa ja jatketaan
     }
+
+    // Tähän päästään, jos linkkiä ei löytynyt tietokannasta.
+    // Annetaan Cloudflare Pagesin jatkaa alkuperäisen reitin etsintää.
+    // Cloudflare palauttaa automaattisesti sivuston rakenteen mukaisen vastauksen.
+    const response = await next();
+    
+    // Jos Cloudflare Pages toteaa, että edes tiedostoa ei löydy (404),
+    // näytämme kävijälle oman error.html sivusi!
+    if (response.status === 404) {
+        return Response.redirect(new URL('/error.html', request.url), 302);
+    }
+    
+    return response;
 }
 
-export async function onRequest(context) {
-    const { request, env } = context;
-    
-    // Tarkista että käyttäjä on kirjautunut sisään
-    const onValtuutettu = await tarkistaValtuutus(request, env);
-    if (!onValtuutettu) {
-        return new Response(JSON.stringify({ error: 'Ei valtuuksia. Kirjaudu uudelleen.' }), { status: 401 });
-    }
-
-    // Haetaan avain
-    const shortIoKey = env.SHORT_IO_SECRET_KEY;
-    
-    // MUUTOS: Käytetään eri muuttujaa (ADMIN_SHORT_IO_DOMAIN) ettei mene ristiin srla.fi kanssa.
-    // Jos muuttujaa ei ole asetettu Cloudflaren paneelissa, käytetään koodiin kovakoodattua 'soro.la' oletuksena.
-    const domainStr = env.ADMIN_SHORT_IO_DOMAIN || 'soro.la';
-
-    if (!shortIoKey) {
-        return new Response(JSON.stringify({ error: 'Palvelimen konfiguraatio puuttuu (Short.io avain).' }), { status: 500 });
-    }
-
-    // Yhteiset API otsakkeet
-    const apiHeaders = {
-        'Authorization': shortIoKey,
-        'Content-Type': 'application/json'
-    };
-
-    try {
-        const url = new URL(request.url);
-
-        // GET - Ladataan linkit
-        if (request.method === "GET") {
-            let domainId = env.SHORT_IO_DOMAIN_ID;
-            
-            if (!domainId) {
-                // Haetaan domainId lennosta Short.iosta
-                const domRes = await fetch("https://api.short.io/api/domains", { headers: apiHeaders });
-                const domData = await domRes.json();
-                const matchedDomain = domData.find(d => d.hostname === domainStr);
-                if (matchedDomain) domainId = matchedDomain.id;
-            }
-
-            if (!domainId) throw new Error("Domainia ei löytynyt Short.iosta.");
-
-            const res = await fetch(`https://api.short.io/api/links?domain_id=${domainId}&limit=100`, { headers: apiHeaders });
-            const data = await res.json();
-            return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
-
-        // POST - Luodaan uusi linkki
-        if (request.method === "POST") {
-            const body = await request.json();
-            const { originalURL, path } = body;
-            
-            const payload = {
-                originalURL: originalURL,
-                domain: domainStr // Käytetään ADMIN_SHORT_IO_DOMAIN:n arvoa
-            };
-            if (path && path.trim() !== "") {
-                payload.path = path.trim();
-            }
-
-            const res = await fetch("https://api.short.io/links", {
-                method: "POST",
-                headers: apiHeaders,
-                body: JSON.stringify(payload)
-            });
-            
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Virhe luotaessa linkkiä APIssa.");
-            
-            return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
-
-        // DELETE - Poistetaan linkki
-        if (request.method === "DELETE") {
-            const idString = url.searchParams.get('id');
-            if (!idString) return new Response(JSON.stringify({ error: 'ID puuttuu' }), { status: 400 });
-
-            const res = await fetch(`https://api.short.io/links/${idString}`, {
-                method: "DELETE",
-                headers: apiHeaders
-            });
-            
-            if (!res.ok) throw new Error("Virhe poistettaessa linkkiä APIssa.");
-            
-            return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        }
-
-        return new Response("Tuntematon metodi.", { status: 405 });
-
-    } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-    }
-}
+```
