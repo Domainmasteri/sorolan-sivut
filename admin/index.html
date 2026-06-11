@@ -4,112 +4,295 @@
     <meta charset="UTF-8">
     <title>Sorolan Sakki - Hallintapaneeli</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Viitataan ylemmän kansion tyyleihin. Varmista että polku on oikea. -->
     <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
     <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
+    <style>
+        .piilotettu { display: none !important; }
+        .ilmoitus { padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        .virhe { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+        .onnistui { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #4ade80; }
+        
+        .lataus-spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,170,0,0.3);
+            border-radius: 50%;
+            border-top-color: #ffaa00;
+            animation: pyori 1s ease-in-out infinite;
+        }
+        @keyframes pyori { to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
     <div class="laatikko" style="max-width: 800px;">
         <h1 class="otsikko">Hallintapaneeli</h1>
 
+        <!-- Virhe/Onnistumis -ilmoitukset -->
+        <div id="ilmoitus-laatikko" class="ilmoitus piilotettu"></div>
+
+        <!-- 1. KIRJAUTUMISNÄKYMÄ -->
         <div id="login-section" class="admin-section">
             <h2>Kirjaudu Sisään</h2>
             <div class="flex-form">
-                <input type="text" id="username" class="syote" placeholder="Käyttäjätunnus">
-                <input type="password" id="password" class="syote" placeholder="Salasana">
+                <input type="text" id="login-user" class="syote" placeholder="Käyttäjätunnus">
+                <input type="password" id="login-pass" class="syote" placeholder="Salasana">
                 <button onclick="kirjaudu()" class="nappula">Kirjaudu</button>
             </div>
-            <p id="login-error" style="color: #ef4444; font-size: 0.9rem; display: none;">Virheellinen tunnus tai salasana.</p>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="#" onclick="vaihdaNakymaa('register-section')" class="linkki-takaisin" style="margin-top: 0;">Eikö sinulla ole tunnusta? Rekisteröidy kutsukoodilla.</a>
+            </div>
         </div>
 
-        <div id="dashboard-section" style="display: none;">
-            
+        <!-- 2. REKISTERÖINTINÄKYMÄ -->
+        <div id="register-section" class="admin-section piilotettu">
+            <h2>Rekisteröidy Kutsukoodilla</h2>
+            <div class="flex-form">
+                <input type="text" id="reg-invite" class="syote" placeholder="Kutsukoodi">
+                <input type="text" id="reg-user" class="syote" placeholder="Haluttu käyttäjätunnus">
+                <input type="password" id="reg-pass" class="syote" placeholder="Salasana">
+                <button onclick="rekisteroidy()" class="nappula nappi-oranssi">Luo tunnus</button>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="#" onclick="vaihdaNakymaa('login-section')" class="linkki-takaisin" style="margin-top: 0;">Takaisin kirjautumiseen.</a>
+            </div>
+        </div>
+
+        <!-- 3. HALLINTANÄKYMÄ (DASHBOARD) -->
+        <div id="dashboard-section" class="piilotettu">
             <div class="admin-section">
                 <h2>🔗 Uusi soro.la linkki</h2>
                 <div class="flex-form">
-                    <input type="text" id="original-url" class="syote" placeholder="Alkuperäinen pitkä URL (https://...)">
-                    <input type="text" id="short-path" class="syote" placeholder="Haluttu lyhenne (esim. 'make')">
-                    <button onclick="luoLinkki()" class="nappula nappi-oranssi">Luo Linkki</button>
+                    <input type="url" id="link-original" class="syote" placeholder="Kohdeosoite (https://...)">
+                    <input type="text" id="link-path" class="syote" placeholder="Lyhenne (esim. 'make')">
+                    <button onclick="luoLinkki()" id="btn-luo" class="nappula nappi-oranssi">Luo Linkki</button>
                 </div>
             </div>
 
             <div class="admin-section">
-                <h2>Hallinnoi linkkejä</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Lyhytosoite</th>
-                            <th>Kohdeosoite</th>
-                            <th>Toiminnot</th>
-                        </tr>
-                    </thead>
-                    <tbody id="links-table-body">
-                        <tr>
-                            <td colspan="3" style="text-align: center; color: #a0aec0;">Ladataan linkkejä...</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="margin: 0; border: none;">Aktiiviset linkit</h2>
+                    <button onclick="lataaLinkit()" class="nappula nappi-pieni">Päivitä ↻</button>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lyhytosoite</th>
+                                <th>Kohdeosoite</th>
+                                <th>Luotu</th>
+                                <th>Toiminnot</th>
+                            </tr>
+                        </thead>
+                        <tbody id="links-table-body">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #a0aec0;">Ei linkkejä ladattu.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <a href="#" onclick="kirjauduUlos()" class="linkki-takaisin">Kirjaudu ulos</a>
+            <div style="text-align: center;">
+                <button onclick="kirjauduUlos()" class="nappula nappi-pieni nappi-puna">Kirjaudu ulos</button>
+            </div>
         </div>
 
         <a href="../" class="linkki-takaisin">← Takaisin etusivulle</a>
     </div>
 
     <script>
-        // HUOM: Tämä on vain frontendin koodia.
-        // API-kutsut on ohjattava omalle backendillesi (esim. Cloudflare Worker),
-        // joka pitää sisällään D1-tietokantayhteyden ja SHORT_IO_SECRET_KEY:n.
+        // API polut (näihin vastaavat Cloudflare Functions tiedostot)
+        const API_AUTH = '/api/auth';
+        const API_LINKS = '/api/links';
 
-        function kirjaudu() {
-            // Tässä kohtaa tekisit fetch-kutsun backendisi kirjautumisreitille.
-            // Esimerkkilogiikka testaukseen:
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('dashboard-section').style.display = 'block';
-            lataaLinkit();
+        // Tila
+        let sessionToken = localStorage.getItem('sorola_admin_token');
+
+        // Alustus
+        window.onload = () => {
+            if (sessionToken) {
+                vaihdaNakymaa('dashboard-section');
+                lataaLinkit();
+            }
+        };
+
+        // --- APUFUNKTIOT ---
+        function naytaIlmoitus(viesti, tyyppi = 'virhe') {
+            const laatikko = document.getElementById('ilmoitus-laatikko');
+            laatikko.textContent = viesti;
+            laatikko.className = `ilmoitus ${tyyppi}`;
+            setTimeout(() => { laatikko.classList.add('piilotettu'); }, 5000);
+        }
+
+        function vaihdaNakymaa(id) {
+            document.getElementById('login-section').classList.add('piilotettu');
+            document.getElementById('register-section').classList.add('piilotettu');
+            document.getElementById('dashboard-section').classList.add('piilotettu');
+            document.getElementById(id).classList.remove('piilotettu');
+            document.getElementById('ilmoitus-laatikko').classList.add('piilotettu');
+        }
+
+        // Luo valtuutusotsake API-pyyntöihin
+        function haeOtsakkeet() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionToken}`
+            };
+        }
+
+        // --- KIRJAUTUMINEN & REKISTERÖINTI ---
+
+        async function kirjaudu() {
+            const user = document.getElementById('login-user').value;
+            const pass = document.getElementById('login-pass').value;
+            if(!user || !pass) return naytaIlmoitus("Syötä tunnus ja salasana.");
+
+            try {
+                const res = await fetch(API_AUTH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'login', username: user, password: pass })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    // Tallennetaan tilapäinen token. (Tässä esimerkissä tallennamme base64 koodatun yhdistelmän.
+                    // Oikeassa tuotannossa voisi käyttää JWT:tä, mutta tämä riittää CF Functionsin kanssa.)
+                    sessionToken = btoa(user + ":" + pass); 
+                    localStorage.setItem('sorola_admin_token', sessionToken);
+                    document.getElementById('login-user').value = '';
+                    document.getElementById('login-pass').value = '';
+                    vaihdaNakymaa('dashboard-section');
+                    lataaLinkit();
+                } else {
+                    naytaIlmoitus(data.error || "Virheellinen tunnus tai salasana.");
+                }
+            } catch (e) {
+                naytaIlmoitus("Palvelinvirhe.");
+            }
+        }
+
+        async function rekisteroidy() {
+            const invite = document.getElementById('reg-invite').value;
+            const user = document.getElementById('reg-user').value;
+            const pass = document.getElementById('reg-pass').value;
+            if(!invite || !user || !pass) return naytaIlmoitus("Täytä kaikki kentät.");
+
+            try {
+                const res = await fetch(API_AUTH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'register', inviteCode: invite, username: user, password: pass })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    naytaIlmoitus("Tunnus luotu! Voit nyt kirjautua sisään.", "onnistui");
+                    document.getElementById('reg-invite').value = '';
+                    document.getElementById('reg-user').value = '';
+                    document.getElementById('reg-pass').value = '';
+                    vaihdaNakymaa('login-section');
+                } else {
+                    naytaIlmoitus(data.error || "Rekisteröinti epäonnistui (Väärä kutsukoodi tai tunnus varattu).");
+                }
+            } catch (e) {
+                naytaIlmoitus("Palvelinvirhe.");
+            }
         }
 
         function kirjauduUlos() {
-            document.getElementById('dashboard-section').style.display = 'none';
-            document.getElementById('login-section').style.display = 'block';
+            sessionToken = null;
+            localStorage.removeItem('sorola_admin_token');
+            vaihdaNakymaa('login-section');
         }
 
+        // --- LINKKIEN HALLINTA ---
+
         async function lataaLinkit() {
-            /* Tässä tekisit GET-kutsun omalle backendillesi, joka hakee tiedot short.io:sta:
-            const response = await fetch('/api/get-links', { headers: { 'Authorization': 'Bearer ' + token } });
-            */
-           
-            const tableBody = document.getElementById('links-table-body');
-            // Mock-dataa ulkoasun testaamiseen
-            tableBody.innerHTML = `
-                <tr>
-                    <td>soro.la/esimerkki</td>
-                    <td>https://google.com</td>
-                    <td>
-                        <button class="nappula nappi-pieni nappi-puna" onclick="poistaLinkki('id123')">Poista</button>
-                    </td>
-                </tr>
-            `;
+            const tbody = document.getElementById('links-table-body');
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;"><div class="lataus-spinner"></div> Ladataan...</td></tr>`;
+            
+            try {
+                const res = await fetch(API_LINKS, { headers: haeOtsakkeet() });
+                if (res.status === 401) return kirjauduUlos(); // Token vanhentunut/väärä
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+
+                if (data.links && data.links.length > 0) {
+                    tbody.innerHTML = data.links.map(link => `
+                        <tr>
+                            <td><code>soro.la/${link.path}</code></td>
+                            <td><a href="${link.originalURL}" target="_blank" style="color: #63b3ed; text-decoration: none;">${link.originalURL.substring(0, 30)}${link.originalURL.length > 30 ? '...' : ''}</a></td>
+                            <td style="font-size: 0.8rem; color: #a0aec0;">${new Date(link.createdAt).toLocaleDateString('fi-FI')}</td>
+                            <td>
+                                <button class="nappula nappi-pieni nappi-puna" onclick="poistaLinkki('${link.idString}', '${link.path}')">Poista</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #a0aec0;">Ei vielä linkkejä.</td></tr>`;
+                }
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">Virhe ladattaessa linkkejä.</td></tr>`;
+                naytaIlmoitus(e.message);
+            }
         }
 
         async function luoLinkki() {
-            const original = document.getElementById('original-url').value;
-            const path = document.getElementById('short-path').value;
-            
-            /* Tässä tekisit POST-kutsun omalle backendillesi, joka ohjaa sen short.io:lle:
-            await fetch('/api/create-link', {
-                method: 'POST',
-                body: JSON.stringify({ originalUrl: original, path: path })
-            });
-            */
-            alert("Kutsu menisi backendille: Luo " + path + " -> " + original);
+            const orgUrl = document.getElementById('link-original').value;
+            const path = document.getElementById('link-path').value;
+            if(!orgUrl) return naytaIlmoitus("Kohdeosoite on pakollinen.");
+
+            const btn = document.getElementById('btn-luo');
+            btn.disabled = true; btn.textContent = "Luodaan...";
+
+            try {
+                const res = await fetch(API_LINKS, {
+                    method: 'POST',
+                    headers: haeOtsakkeet(),
+                    body: JSON.stringify({ originalURL: orgUrl, path: path })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    naytaIlmoitus(`Linkki soro.la/${data.path} luotu!`, "onnistui");
+                    document.getElementById('link-original').value = '';
+                    document.getElementById('link-path').value = '';
+                    lataaLinkit();
+                } else {
+                    naytaIlmoitus(data.error || "Virhe linkkiä luotaessa.");
+                }
+            } catch (e) {
+                naytaIlmoitus("Palvelinvirhe.");
+            } finally {
+                btn.disabled = false; btn.textContent = "Luo Linkki";
+            }
         }
 
-        async function poistaLinkki(id) {
-            if(confirm('Haluatko varmasti poistaa tämän linkin?')) {
-                // DELETE-kutsu backendille
-                alert("Poistetaan linkki ID: " + id);
+        async function poistaLinkki(idString, path) {
+            if(!confirm(`Haluatko varmasti poistaa linkin soro.la/${path}?`)) return;
+
+            try {
+                // Cloudflare ei tue sisäänrakennetusti DELETE url-parametreja yhtä helposti functions kansiossa,
+                // joten viemme ID:n querystringillä.
+                const res = await fetch(`${API_LINKS}?id=${idString}`, {
+                    method: 'DELETE',
+                    headers: haeOtsakkeet()
+                });
+                
+                if (res.ok) {
+                    naytaIlmoitus("Linkki poistettu.", "onnistui");
+                    lataaLinkit();
+                } else {
+                    const data = await res.json();
+                    naytaIlmoitus(data.error || "Virhe poistossa.");
+                }
+            } catch (e) {
+                naytaIlmoitus("Palvelinvirhe.");
             }
         }
     </script>
