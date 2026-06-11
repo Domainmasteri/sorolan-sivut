@@ -1,5 +1,5 @@
 ```javascript
-// Aputoiminto salasanan hajauttamiseen
+// functions/api/auth.js
 async function luoHash(teksti) {
     const msgBuffer = new TextEncoder().encode(teksti);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -7,33 +7,73 @@ async function luoHash(teksti) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Aputoiminto valtuutuksen tarkistamiseen
-async function tarkistaValtuutus(request, env) {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+export async function onRequestPost(context) {
+    const { request, env } = context;
     
     try {
-        const base64Token = authHeader.split(" ")[1];
-        const purettu = atob(base64Token);
-        const [username, password] = purettu.split(":");
-        if (!username || !password) return false;
+        const body = await request.json();
         
-        const passHash = await luoHash(password);
-        const result = await env.DB.prepare(
-            "SELECT id FROM users WHERE username = ? AND password_hash = ?"
-        ).bind(username, passHash).first();
+        // 1. KIRJAUTUMINEN
+        if (body.action === 'login') {
+            const { username, password } = body;
+            if (!username || !password) return new Response(JSON.stringify({ error: 'Tunnus ja salasana vaaditaan.' }), { status: 400 });
+
+            const passHash = await luoHash(password);
+
+            const result = await env.DB.prepare(
+                "SELECT id FROM users WHERE username = ? AND password_hash = ?"
+            ).bind(username, passHash).first();
+
+            if (result) {
+                return new Response(JSON.stringify({ success: true }), { status: 200 });
+            } else {
+                return new Response(JSON.stringify({ error: 'Väärä käyttäjätunnus tai salasana.' }), { status: 401 });
+            }
+        }
         
-        return !!result;
-    } catch (e) {
-        return false;
+        // 2. REKISTERÖINTI
+        if (body.action === 'register') {
+            const { inviteCode, username, password } = body;
+            if (!inviteCode || !username || !password) return new Response(JSON.stringify({ error: 'Kaikki kentät vaaditaan.' }), { status: 400 });
+
+            if (username.length < 3 || password.length < 6) {
+                return new Response(JSON.stringify({ error: 'Tunnuksen minimipituus 3, salasanan 6 merkkiä.' }), { status: 400 });
+            }
+
+            const inviteHash = await luoHash(inviteCode);
+
+            const inviteResult = await env.DB.prepare(
+                "SELECT id FROM invites WHERE code_hash = ? AND is_used = 0"
+            ).bind(inviteHash).first();
+
+            if (!inviteResult) {
+                return new Response(JSON.stringify({ error: 'Kutsukoodi on virheellinen tai jo käytetty.' }), { status: 400 });
+            }
+
+            const userCheck = await env.DB.prepare("SELECT id FROM users WHERE username = ?").bind(username).first();
+            if (userCheck) {
+                return new Response(JSON.stringify({ error: 'Käyttäjätunnus on jo varattu.' }), { status: 400 });
+            }
+
+            const passHash = await luoHash(password);
+            
+            await env.DB.batch([
+                env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").bind(username, passHash),
+                env.DB.prepare("UPDATE invites SET is_used = 1 WHERE id = ?").bind(inviteResult.id)
+            ]);
+
+            return new Response(JSON.stringify({ success: true, message: 'Käyttäjä luotu.' }), { status: 200 });
+        }
+
+        return new Response(JSON.stringify({ error: 'Tuntematon pyyntö.' }), { status: 400 });
+
+    } catch (err) {
+        return new Response(JSON.stringify({ error: 'Palvelinvirhe.', details: err.message }), { status: 500 });
     }
 }
 
-// Luo satunnainen merkkijono, jos polkua ei ole määritetty
-function luoSatunnainenPolku(pituus = 5) {
-    const merkit = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let tulos = '';
-    for (let i = 0; i < pituus; i++) {
+
+```
         tulos += merkit.charAt(Math.floor(Math.random() * merkit.length));
     }
     return tulos;
