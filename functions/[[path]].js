@@ -2,39 +2,42 @@
 export async function onRequestGet(context) {
     const { request, env, params, next } = context;
 
-    // Haetaan URL-polku (esim. "Tonttu")
+    // Selvitetään millä domainilla kävijä tuli (poistetaan mahdollinen www. etuliite)
+    const url = new URL(request.url);
+    const hostname = url.hostname.replace('www.', '');
+
     const pathArray = params.path;
     if (!pathArray || pathArray.length === 0) {
-        return next(); // Pääsivu sorola.fi/, annetaan olla
+        return next(); // Pääsivut saavat latautua normaalisti
     }
 
     const shortPath = pathArray.join('/');
 
-    // Jätetään sivuston omat oikeat kansiot rauhaan, ettei niitä yritetä lyhentää
-    if (shortPath.startsWith('tyylit/') || shortPath.startsWith('admin/') || shortPath.startsWith('api/')) {
+    // 1. JOS OLLAAN PÄÄSIVUSTOLLA (sorola.fi)
+    // Annetaan Cloudflare Pagesin ladata omat oikeat fyysiset sivut ja tiedostot normaalisti
+    // (esim. sorola.fi/ohjeet tai sorola.fi/tyylit/pohja.css toimivat suoraan)
+    if (hostname === 'sorola.fi') {
         return next();
     }
 
-    try {
-        // Etsitään lyhennettä tietokannasta
-        const result = await env.DB.prepare("SELECT original_url FROM links WHERE short_path = ?").bind(shortPath).first();
-        
-        if (result && result.original_url) {
-            // Linkki löytyi! Tehdään uudelleenohjaus kohdeosoitteeseen
-            return Response.redirect(result.original_url, 302);
+    // 2. JOS OLLAAN LYHENNYS-DOMAINISSA (soro.la)
+    if (hostname === 'soro.la') {
+        try {
+            // Etsitään lyhennettä tietokannasta
+            const result = await env.DB.prepare("SELECT original_url FROM links WHERE short_path = ?").bind(shortPath).first();
+            
+            if (result && result.original_url) {
+                // Linkki löytyi tietokannasta! Tehdään uudelleenohjaus kohdeosoitteeseen
+                return Response.redirect(result.original_url, 302);
+            }
+        } catch (e) {
+            // Tietokantavirheen sattuessa jatketaan eteenpäin
         }
-    } catch (e) {
-        // Jos kanta antaa virheen, sivuutetaan se ja jatketaan
+
+        // Jos linkkiä ei löytynyt soro.la tietokannasta, ohjataan kävijä pääsivuston virhesivulle
+        return Response.redirect('https://sorola.fi/lyhennin/error', 302);
     }
 
-    // Jos lyhennettä ei löytynyt tietokannasta, annetaan Pagesin jatkaa etsintää
-    const response = await next();
-    
-    // Jos Pages toteaa, ettei sivua oikeasti ole olemassa (404),
-    // heitetään kävijä nätisti sinun omalle error.html -sivullesi!
-    if (response.status === 404) {
-        return Response.redirect(new URL('/error.html', request.url), 302);
-    }
-    
-    return response;
+    // Varajärjestelmä muille domaineille
+    return next();
 }
