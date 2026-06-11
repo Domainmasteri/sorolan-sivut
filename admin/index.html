@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>Sorolan Sakki - Hallintapaneeli</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="/tyylit/pohja.css">
-    <link rel="icon" type="image/svg+xml" href="/tyylit/fav.ico">
+    <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
+    <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
     <style>
         .piilotettu { display: none !important; }
         .ilmoitus { padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: bold; }
@@ -111,6 +111,16 @@
                 </div>
             </div>
 
+            <div class="admin-section" style="margin-top: 25px;">
+                <h2 style="font-size: 1.1rem;">🔑 Vaihda salasana</h2>
+                <div class="flex-form">
+                    <input type="password" id="cp-old" class="syote" placeholder="Nykyinen salasana">
+                    <input type="password" id="cp-new" class="syote" placeholder="Uusi salasana">
+                    <input type="password" id="cp-new2" class="syote" placeholder="Uusi uudelleen">
+                    <button onclick="vaihdaSalasana()" id="btn-cp" class="nappula nappi-oranssi">Vaihda</button>
+                </div>
+            </div>
+
             <div style="text-align: center; margin-top: 25px;">
                 <button onclick="kirjauduUlos()" class="nappula nappi-pieni nappi-puna">Kirjaudu ulos</button>
             </div>
@@ -189,6 +199,46 @@
                     vaihdaNakymaa('login-section');
                 } else { const data = await res.json(); naytaIlmoitus(data.error || "Rekisteröinti epäonnistui."); }
             } catch (e) { naytaIlmoitus("Palvelinvirhe."); }
+        }
+
+        async function vaihdaSalasana() {
+            const oldP = document.getElementById('cp-old').value;
+            const newP = document.getElementById('cp-new').value;
+            const newP2 = document.getElementById('cp-new2').value;
+            
+            if(!oldP || !newP || !newP2) return naytaIlmoitus("Täytä kaikki salasanakentät.");
+            if(newP !== newP2) return naytaIlmoitus("Uudet salasanat eivät täsmää.");
+            
+            const btn = document.getElementById('btn-cp');
+            btn.disabled = true; btn.textContent = "Vaihdetaan...";
+            
+            const username = haeOmaTunnus();
+
+            try {
+                const res = await fetch(API_AUTH, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'change_password', username: username, oldPassword: oldP, newPassword: newP })
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    naytaIlmoitus("Salasana vaihdettu onnistuneesti!", "onnistui");
+                    // Päivitetään selaimen välimuistissa oleva istunto heti uudella salasanalla
+                    sessionToken = btoa(username + ":" + newP);
+                    localStorage.setItem('sorola_admin_token', sessionToken);
+                    
+                    document.getElementById('cp-old').value = '';
+                    document.getElementById('cp-new').value = '';
+                    document.getElementById('cp-new2').value = '';
+                } else {
+                    naytaIlmoitus(data.error || "Virhe salasanan vaihdossa.");
+                }
+            } catch (e) {
+                naytaIlmoitus("Palvelinvirhe.");
+            } finally {
+                btn.disabled = false; btn.textContent = "Vaihda";
+            }
         }
 
         function kirjauduUlos() { sessionToken = null; localStorage.removeItem('sorola_admin_token'); vaihdaNakymaa('login-section'); }
