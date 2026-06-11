@@ -1,4 +1,3 @@
-```javascript
 // functions/api/links.js
 async function luoHash(teksti) {
     const msgBuffer = new TextEncoder().encode(teksti);
@@ -102,6 +101,3 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
 }
-
-
-```
