@@ -1,4 +1,3 @@
-```javascript
 // Aputoiminto salasanan hajauttamiseen
 async function luoHash(teksti) {
     const msgBuffer = new TextEncoder().encode(teksti);
@@ -40,12 +39,15 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: 'Ei valtuuksia. Kirjaudu uudelleen.' }), { status: 401 });
     }
 
-    // Tarvitsemme ympäristömuuttujat Short.iota varten
+    // Haetaan avain
     const shortIoKey = env.SHORT_IO_SECRET_KEY;
-    const domainStr = env.SHORT_IO_DOMAIN; // esim. "soro.la"
+    
+    // MUUTOS: Käytetään eri muuttujaa (ADMIN_SHORT_IO_DOMAIN) ettei mene ristiin srla.fi kanssa.
+    // Jos muuttujaa ei ole asetettu Cloudflaren paneelissa, käytetään koodiin kovakoodattua 'soro.la' oletuksena.
+    const domainStr = env.ADMIN_SHORT_IO_DOMAIN || 'soro.la';
 
-    if (!shortIoKey || !domainStr) {
-        return new Response(JSON.stringify({ error: 'Palvelimen konfiguraatio puuttuu (Short.io avaimet).' }), { status: 500 });
+    if (!shortIoKey) {
+        return new Response(JSON.stringify({ error: 'Palvelimen konfiguraatio puuttuu (Short.io avain).' }), { status: 500 });
     }
 
     // Yhteiset API otsakkeet
@@ -59,12 +61,10 @@ export async function onRequest(context) {
 
         // GET - Ladataan linkit
         if (request.method === "GET") {
-            // Short.io vaatii domain_id:n jotta voi hakea linkit.
-            // Jos sinulla ei ole domain_id:tä ympäristömuuttujana, meidän täytyy hakea se short.iosta domainin nimellä.
             let domainId = env.SHORT_IO_DOMAIN_ID;
             
             if (!domainId) {
-                // Haetaan domainId lennosta (hidastaa hieman, paras laittaa env muuttujaksi suoraan)
+                // Haetaan domainId lennosta Short.iosta
                 const domRes = await fetch("https://api.short.io/api/domains", { headers: apiHeaders });
                 const domData = await domRes.json();
                 const matchedDomain = domData.find(d => d.hostname === domainStr);
@@ -85,7 +85,7 @@ export async function onRequest(context) {
             
             const payload = {
                 originalURL: originalURL,
-                domain: domainStr // short.io api /links hyväksyy domain-nimen stringinä luonnissa!
+                domain: domainStr // Käytetään ADMIN_SHORT_IO_DOMAIN:n arvoa
             };
             if (path && path.trim() !== "") {
                 payload.path = path.trim();
@@ -124,5 +124,3 @@ export async function onRequest(context) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 }
-
-```
