@@ -1,18 +1,16 @@
-```javascript
 // functions/[[path]].js
-// Tämä tiedosto nappaa kaikki sivustolle tulevat pyynnöt (esim. soro.la/lyhenne)
-
 export async function onRequestGet(context) {
     const { request, env, params, next } = context;
 
+    // Haetaan URL-polku (esim. "Tonttu")
     const pathArray = params.path;
     if (!pathArray || pathArray.length === 0) {
-        return next();
+        return next(); // Pääsivu sorola.fi/, annetaan olla
     }
 
     const shortPath = pathArray.join('/');
 
-    // Jätetään rauhaan oikeat kansiot
+    // Jätetään sivuston omat oikeat kansiot rauhaan, ettei niitä yritetä lyhentää
     if (shortPath.startsWith('tyylit/') || shortPath.startsWith('admin/') || shortPath.startsWith('api/')) {
         return next();
     }
@@ -22,23 +20,21 @@ export async function onRequestGet(context) {
         const result = await env.DB.prepare("SELECT original_url FROM links WHERE short_path = ?").bind(shortPath).first();
         
         if (result && result.original_url) {
-            // Linkki löytyi! Uudelleenohjataan
+            // Linkki löytyi! Tehdään uudelleenohjaus kohdeosoitteeseen
             return Response.redirect(result.original_url, 302);
         }
     } catch (e) {
-        // Jätetään tietokantavirheet huomiotta tässä vaiheessa ja annetaan seuraavan vaiheen jatkaa
+        // Jos kanta antaa virheen, sivuutetaan se ja jatketaan
     }
 
-    // Jos linkkiä ei löytynyt tietokannasta, annetaan Pagesin tarkistaa löytyykö tiedostoa
+    // Jos lyhennettä ei löytynyt tietokannasta, annetaan Pagesin jatkaa etsintää
     const response = await next();
     
-    // Jos tiedostoa ei löydy (404), ohjataan sinun hienolle error.html sivulle!
+    // Jos Pages toteaa, ettei sivua oikeasti ole olemassa (404),
+    // heitetään kävijä nätisti sinun omalle error.html -sivullesi!
     if (response.status === 404) {
         return Response.redirect(new URL('/error.html', request.url), 302);
     }
     
     return response;
 }
-
-
-```
