@@ -1,49 +1,107 @@
 ```javascript
-// Tämä tiedosto nappaa kaikki sivustolle tulevat pyynnöt (catch-all).
-// Esim. soro.la/esimerkki saapuu tänne, jos staattista /esimerkki kansiota tai tiedostoa ei löydy.
+// functions/api/links.js
+async function luoHash(teksti) {
+    const msgBuffer = new TextEncoder().encode(teksti);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
-export async function onRequestGet(context) {
-    const { request, env, params, next } = context;
-
-    // Haetaan URL-polku (params.path on array)
-    const pathArray = params.path;
-    if (!pathArray || pathArray.length === 0) {
-        // Pääsivu soro.la/ -> annetaan Pagesin näyttää index.html normaalisti
-        return next();
+async function tarkistaValtuutus(request, env) {
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+    
+    try {
+        const base64Token = authHeader.split(" ")[1];
+        const purettu = atob(base64Token);
+        const [username, password] = purettu.split(":");
+        if (!username || !password) return false;
+        
+        const passHash = await luoHash(password);
+        const result = await env.DB.prepare(
+            "SELECT id FROM users WHERE username = ? AND password_hash = ?"
+        ).bind(username, passHash).first();
+        
+        return !!result;
+    } catch (e) {
+        return false;
     }
+}
 
-    // Yhdistetään taulukko takaisin poluksi, esim. "make"
-    const shortPath = pathArray.join('/');
+function luoSatunnainenPolku(pituus = 5) {
+    const merkit = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let tulos = '';
+    for (let i = 0; i < pituus; i++) {
+        tulos += merkit.charAt(Math.floor(Math.random() * merkit.length));
+    }
+    return tulos;
+}
 
-    // Jos yritetään hakea fyysisiä tiedostoja (kuten tyylit/pohja.css), annetaan mennä ohi
-    if (shortPath.startsWith('tyylit/') || shortPath.startsWith('admin/') || shortPath.startsWith('api/')) {
-        return next();
+export async function onRequest(context) {
+    const { request, env } = context;
+    
+    const onValtuutettu = await tarkistaValtuutus(request, env);
+    if (!onValtuutettu) {
+        return new Response(JSON.stringify({ error: 'Ei valtuuksia. Kirjaudu uudelleen.' }), { status: 401 });
     }
 
     try {
-        // Etsitään lyhennettä tietokannasta
-        const result = await env.DB.prepare("SELECT original_url FROM links WHERE short_path = ?").bind(shortPath).first();
-        
-        if (result && result.original_url) {
-            // Linkki löytyi! Tehdään 302 uudelleenohjaus kohdeosoitteeseen
-            return Response.redirect(result.original_url, 302);
-        }
-    } catch (e) {
-        // Tietokantavirheen sattuessa sivuutetaan se hiljaa ja jatketaan
-    }
+        const url = new URL(request.url);
 
-    // Tähän päästään, jos linkkiä ei löytynyt tietokannasta.
-    // Annetaan Cloudflare Pagesin jatkaa alkuperäisen reitin etsintää.
-    // Cloudflare palauttaa automaattisesti sivuston rakenteen mukaisen vastauksen.
-    const response = await next();
-    
-    // Jos Cloudflare Pages toteaa, että edes tiedostoa ei löydy (404),
-    // näytämme kävijälle oman error.html sivusi!
-    if (response.status === 404) {
-        return Response.redirect(new URL('/error.html', request.url), 302);
+        // GET - Ladataan kaikki linkit tietokannasta uusimmasta vanhimpaan
+        if (request.method === "GET") {
+            const { results } = await env.DB.prepare("SELECT * FROM links ORDER BY created_at DESC").all();
+            return new Response(JSON.stringify({ links: results }), { 
+                status: 200, 
+                headers: { 'Content-Type': 'application/json' } 
+            });
+        }
+
+        // POST - Luodaan uusi linkki omaan tietokantaan
+        if (request.method === "POST") {
+            const body = await request.json();
+            const { originalURL } = body;
+            let path = body.path;
+
+            if (!originalURL) return new Response(JSON.stringify({ error: "Kohdeosoite puuttuu." }), { status: 400 });
+
+            // Jos lyhennettä ei ole annettu, luodaan satunnainen
+            if (!path || path.trim() === "") {
+                path = luoSatunnainenPolku();
+            } else {
+                path = path.trim().replace(/[^a-zA-Z0-9_-]/g, ""); // Poistaa erikoismerkit
+            }
+
+            try {
+                await env.DB.prepare(
+                    "INSERT INTO links (short_path, original_url) VALUES (?, ?)"
+                ).bind(path, originalURL).run();
+                
+                return new Response(JSON.stringify({ success: true, path: path }), { status: 200 });
+            } catch (dbError) {
+                if (dbError.message.includes('UNIQUE')) {
+                    return new Response(JSON.stringify({ error: "Tämä lyhenne on jo käytössä!" }), { status: 400 });
+                }
+                throw dbError;
+            }
+        }
+
+        // DELETE - Poistetaan linkki
+        if (request.method === "DELETE") {
+            const pathToRemove = url.searchParams.get('path');
+            if (!pathToRemove) return new Response(JSON.stringify({ error: 'Polku puuttuu' }), { status: 400 });
+
+            await env.DB.prepare("DELETE FROM links WHERE short_path = ?").bind(pathToRemove).run();
+            
+            return new Response(JSON.stringify({ success: true }), { status: 200 });
+        }
+
+        return new Response("Tuntematon metodi.", { status: 405 });
+
+    } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), { status: 500 });
     }
-    
-    return response;
 }
+
 
 ```
