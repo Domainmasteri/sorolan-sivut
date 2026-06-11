@@ -64,6 +64,25 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ success: true, message: 'Käyttäjä luotu.' }), { status: 200 });
         }
 
+        // 3. SALASANAN VAIHTO
+        if (body.action === 'change_password') {
+            const { username, oldPassword, newPassword } = body;
+            if (!username || !oldPassword || !newPassword) return new Response(JSON.stringify({ error: 'Kaikki kentät vaaditaan.' }), { status: 400 });
+            if (newPassword.length < 6) return new Response(JSON.stringify({ error: 'Uuden salasanan minimipituus on 6 merkkiä.' }), { status: 400 });
+
+            const oldHash = await luoHash(oldPassword);
+            const userCheck = await env.DB.prepare("SELECT id FROM users WHERE username = ? AND password_hash = ?").bind(username, oldHash).first();
+
+            if (!userCheck) {
+                return new Response(JSON.stringify({ error: 'Nykyinen salasana on väärin.' }), { status: 401 });
+            }
+
+            const newHash = await luoHash(newPassword);
+            await env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?").bind(newHash, userCheck.id).run();
+
+            return new Response(JSON.stringify({ success: true, message: 'Salasana vaihdettu.' }), { status: 200 });
+        }
+
         return new Response(JSON.stringify({ error: 'Tuntematon pyyntö.' }), { status: 400 });
 
     } catch (err) {
