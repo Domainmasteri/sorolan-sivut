@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Sorolan Sakki - Hallintapaneeli</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Viitataan ylemmän kansion tyyleihin. Varmista että polku on oikea. -->
     <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
     <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
     <style>
@@ -29,7 +28,6 @@
     <div class="laatikko" style="max-width: 800px;">
         <h1 class="otsikko">Hallintapaneeli</h1>
 
-        <!-- Virhe/Onnistumis -ilmoitukset -->
         <div id="ilmoitus-laatikko" class="ilmoitus piilotettu"></div>
 
         <!-- 1. KIRJAUTUMISNÄKYMÄ -->
@@ -62,10 +60,10 @@
         <!-- 3. HALLINTANÄKYMÄ (DASHBOARD) -->
         <div id="dashboard-section" class="piilotettu">
             <div class="admin-section">
-                <h2>🔗 Uusi soro.la linkki</h2>
+                <h2>🔗 Uusi oma linkki</h2>
                 <div class="flex-form">
                     <input type="url" id="link-original" class="syote" placeholder="Kohdeosoite (https://...)">
-                    <input type="text" id="link-path" class="syote" placeholder="Lyhenne (esim. 'make')">
+                    <input type="text" id="link-path" class="syote" placeholder="Lyhenne (tyhjä = satunnainen)">
                     <button onclick="luoLinkki()" id="btn-luo" class="nappula nappi-oranssi">Luo Linkki</button>
                 </div>
             </div>
@@ -104,14 +102,11 @@
     </div>
 
     <script>
-        // API polut (näihin vastaavat Cloudflare Functions tiedostot)
         const API_AUTH = '/api/auth';
         const API_LINKS = '/api/links';
 
-        // Tila
         let sessionToken = localStorage.getItem('sorola_admin_token');
 
-        // Alustus
         window.onload = () => {
             if (sessionToken) {
                 vaihdaNakymaa('dashboard-section');
@@ -119,11 +114,11 @@
             }
         };
 
-        // --- APUFUNKTIOT ---
         function naytaIlmoitus(viesti, tyyppi = 'virhe') {
             const laatikko = document.getElementById('ilmoitus-laatikko');
             laatikko.textContent = viesti;
             laatikko.className = `ilmoitus ${tyyppi}`;
+            laatikko.classList.remove('piilotettu');
             setTimeout(() => { laatikko.classList.add('piilotettu'); }, 5000);
         }
 
@@ -135,15 +130,12 @@
             document.getElementById('ilmoitus-laatikko').classList.add('piilotettu');
         }
 
-        // Luo valtuutusotsake API-pyyntöihin
         function haeOtsakkeet() {
             return {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${sessionToken}`
             };
         }
-
-        // --- KIRJAUTUMINEN & REKISTERÖINTI ---
 
         async function kirjaudu() {
             const user = document.getElementById('login-user').value;
@@ -159,8 +151,6 @@
                 
                 const data = await res.json();
                 if (res.ok) {
-                    // Tallennetaan tilapäinen token. (Tässä esimerkissä tallennamme base64 koodatun yhdistelmän.
-                    // Oikeassa tuotannossa voisi käyttää JWT:tä, mutta tämä riittää CF Functionsin kanssa.)
                     sessionToken = btoa(user + ":" + pass); 
                     localStorage.setItem('sorola_admin_token', sessionToken);
                     document.getElementById('login-user').value = '';
@@ -170,9 +160,7 @@
                 } else {
                     naytaIlmoitus(data.error || "Virheellinen tunnus tai salasana.");
                 }
-            } catch (e) {
-                naytaIlmoitus("Palvelinvirhe.");
-            }
+            } catch (e) { naytaIlmoitus("Palvelinvirhe."); }
         }
 
         async function rekisteroidy() {
@@ -195,12 +183,8 @@
                     document.getElementById('reg-user').value = '';
                     document.getElementById('reg-pass').value = '';
                     vaihdaNakymaa('login-section');
-                } else {
-                    naytaIlmoitus(data.error || "Rekisteröinti epäonnistui (Väärä kutsukoodi tai tunnus varattu).");
-                }
-            } catch (e) {
-                naytaIlmoitus("Palvelinvirhe.");
-            }
+                } else { naytaIlmoitus(data.error || "Rekisteröinti epäonnistui."); }
+            } catch (e) { naytaIlmoitus("Palvelinvirhe."); }
         }
 
         function kirjauduUlos() {
@@ -209,27 +193,26 @@
             vaihdaNakymaa('login-section');
         }
 
-        // --- LINKKIEN HALLINTA ---
-
         async function lataaLinkit() {
             const tbody = document.getElementById('links-table-body');
             tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;"><div class="lataus-spinner"></div> Ladataan...</td></tr>`;
             
             try {
                 const res = await fetch(API_LINKS, { headers: haeOtsakkeet() });
-                if (res.status === 401) return kirjauduUlos(); // Token vanhentunut/väärä
+                if (res.status === 401) return kirjauduUlos();
                 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
 
                 if (data.links && data.links.length > 0) {
+                    const nykyinenDomain = window.location.hostname;
                     tbody.innerHTML = data.links.map(link => `
                         <tr>
-                            <td><code>soro.la/${link.path}</code></td>
-                            <td><a href="${link.originalURL}" target="_blank" style="color: #63b3ed; text-decoration: none;">${link.originalURL.substring(0, 30)}${link.originalURL.length > 30 ? '...' : ''}</a></td>
-                            <td style="font-size: 0.8rem; color: #a0aec0;">${new Date(link.createdAt).toLocaleDateString('fi-FI')}</td>
+                            <td><code>${nykyinenDomain}/${link.short_path}</code></td>
+                            <td><a href="${link.original_url}" target="_blank" style="color: #63b3ed; text-decoration: none;">${link.original_url.substring(0, 30)}${link.original_url.length > 30 ? '...' : ''}</a></td>
+                            <td style="font-size: 0.8rem; color: #a0aec0;">${new Date(link.created_at).toLocaleDateString('fi-FI')}</td>
                             <td>
-                                <button class="nappula nappi-pieni nappi-puna" onclick="poistaLinkki('${link.idString}', '${link.path}')">Poista</button>
+                                <button class="nappula nappi-pieni nappi-puna" onclick="poistaLinkki('${link.short_path}')">Poista</button>
                             </td>
                         </tr>
                     `).join('');
@@ -259,27 +242,20 @@
                 
                 const data = await res.json();
                 if (res.ok) {
-                    naytaIlmoitus(`Linkki soro.la/${data.path} luotu!`, "onnistui");
+                    naytaIlmoitus(`Linkki luotu! (/${data.path})`, "onnistui");
                     document.getElementById('link-original').value = '';
                     document.getElementById('link-path').value = '';
                     lataaLinkit();
-                } else {
-                    naytaIlmoitus(data.error || "Virhe linkkiä luotaessa.");
-                }
-            } catch (e) {
-                naytaIlmoitus("Palvelinvirhe.");
-            } finally {
-                btn.disabled = false; btn.textContent = "Luo Linkki";
-            }
+                } else { naytaIlmoitus(data.error || "Virhe linkkiä luotaessa."); }
+            } catch (e) { naytaIlmoitus("Palvelinvirhe."); } 
+            finally { btn.disabled = false; btn.textContent = "Luo Linkki"; }
         }
 
-        async function poistaLinkki(idString, path) {
-            if(!confirm(`Haluatko varmasti poistaa linkin soro.la/${path}?`)) return;
+        async function poistaLinkki(path) {
+            if(!confirm(`Haluatko varmasti poistaa linkin /${path}?`)) return;
 
             try {
-                // Cloudflare ei tue sisäänrakennetusti DELETE url-parametreja yhtä helposti functions kansiossa,
-                // joten viemme ID:n querystringillä.
-                const res = await fetch(`${API_LINKS}?id=${idString}`, {
+                const res = await fetch(`${API_LINKS}?path=${encodeURIComponent(path)}`, {
                     method: 'DELETE',
                     headers: haeOtsakkeet()
                 });
@@ -291,9 +267,7 @@
                     const data = await res.json();
                     naytaIlmoitus(data.error || "Virhe poistossa.");
                 }
-            } catch (e) {
-                naytaIlmoitus("Palvelinvirhe.");
-            }
+            } catch (e) { naytaIlmoitus("Palvelinvirhe."); }
         }
     </script>
 </body>
