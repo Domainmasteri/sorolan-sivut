@@ -27,7 +27,8 @@ export async function onRequest(context) {
 
     try {
         if (request.method === "GET") {
-            const { results } = await env.DB.prepare("SELECT id, is_used, created_at FROM invites ORDER BY created_at DESC").all();
+            // Haetaan tietokannan code_hash nimellä "code", koska jatkossa tallennamme siihen selkokielistä tekstiä
+            const { results } = await env.DB.prepare("SELECT id, code_hash as code, is_used, created_at FROM invites ORDER BY created_at DESC").all();
             return new Response(JSON.stringify({ invites: results }), { status: 200 });
         }
 
@@ -35,9 +36,9 @@ export async function onRequest(context) {
             const { code } = await request.json();
             if (!code || code.length < 3) return new Response(JSON.stringify({ error: 'Koodin tulee olla vähintään 3 merkkiä.' }), { status: 400 });
 
-            const codeHash = await luoHash(code);
             try {
-                await env.DB.prepare("INSERT INTO invites (code_hash) VALUES (?)").bind(codeHash).run();
+                // TALLENNETAAN SELKOKIELISENÄ
+                await env.DB.prepare("INSERT INTO invites (code_hash) VALUES (?)").bind(code).run();
                 return new Response(JSON.stringify({ success: true }), { status: 200 });
             } catch (dbError) {
                 return new Response(JSON.stringify({ error: "Tämä kutsukoodi on jo olemassa!" }), { status: 400 });

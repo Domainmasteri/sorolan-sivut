@@ -39,11 +39,10 @@ export async function onRequestPost(context) {
                 return new Response(JSON.stringify({ error: 'Tunnuksen minimipituus 3, salasanan 6 merkkiä.' }), { status: 400 });
             }
 
-            const inviteHash = await luoHash(inviteCode);
-
+            // TARKISTETAAN KUTSUKOODI SELKOKIELISENÄ
             const inviteResult = await env.DB.prepare(
                 "SELECT id FROM invites WHERE code_hash = ? AND is_used = 0"
-            ).bind(inviteHash).first();
+            ).bind(inviteCode).first();
 
             if (!inviteResult) {
                 return new Response(JSON.stringify({ error: 'Kutsukoodi on virheellinen tai jo käytetty.' }), { status: 400 });
