@@ -46,7 +46,7 @@ export async function onRequestGet(context) {
                 return Response.redirect(result.original_url, 302);
             }
         } catch (e) {}
-        return Response.redirect('https://sorola.fi/error.html', 302);
+        return Response.redirect('https://sorola.fi/lyhennin/error', 302);
     }
 
     return next();
