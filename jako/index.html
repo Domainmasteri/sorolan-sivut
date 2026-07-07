@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sorola Share</title>
     
-    <!-- TÄSSÄ ON LINKKI OMIIN TYYLEIHISI -->
-    <!-- Korvaa 'tyyli.css' sillä nimellä, mikä tiedosto tyylit-kansiossasi on -->
     <link rel="stylesheet" href="/tyylit/pohja.css">
+    <link rel="icon" type="image/svg+xml" href="tyylit/fav.ico">
     
-    <!-- Lucide-ikonit, jos haluat säilyttää ne (vapaaehtoinen) -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
@@ -17,7 +15,6 @@
     <div class="share-container">
         <h1>Jaa tiedostoja</h1>
 
-        <!-- Drag & Drop alue -->
         <div id="dropzone" class="dropzone" style="border: 2px dashed #ccc; padding: 40px; text-align: center; cursor: pointer; margin-bottom: 20px;">
             <input type="file" id="fileInput" style="display: none;" />
             
@@ -26,14 +23,116 @@
                 <p>Raahaa tiedosto tähän tai klikkaa</p>
             </div>
             
-            <!-- Latausanimaatio (piilotettu oletuksena) -->
             <div id="loading" style="display: none; flex-direction: column; align-items: center;">
                 <i data-lucide="loader-2"></i>
                 <p>Ladataan pilveen...</p>
             </div>
         </div>
 
-        <!-- Tulosalue (piilotettu oletuksena) -->
+        <div id="result" style="display: none; padding: 20px; border: 1px solid green;">
+            <p>Tiedosto ladattu onnistuneesti!</p>
+            <input type="text" id="shareLink" readonly style="width: 80%; padding: 5px;" />
+            <button id="copyBtn" style="padding: 5px 10px;">Kopioi</button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const dropzoneContent = document.getElementById('dropzone-content');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const shareLink = document.getElementById('shareLink');
+        const copyBtn = document.getElementById('copyBtn');
+
+        // Avaa tiedostonvalinta klikatessa
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        // Drag & drop efektit (toimii tietokoneella)
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = 'blue';
+        });
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.style.borderColor = '#ccc';
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.style.borderColor = '#ccc';
+            if (e.dataTransfer.files.length) {
+                handleUpload(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Tiedoston valinta inputin kautta
+        fileInput.addEventListener('change', function() {
+            if (this.files.length) {
+                handleUpload(this.files[0]);
+            }
+        });
+
+        // Latauslogiikka
+        async function handleUpload(file) {
+            // ==========================================
+            // SÄÄDÄ TÄMÄ SAMA RAJOITUS KUIN BÄKKÄRISSÄ
+            // ==========================================
+            const MAX_SIZE_MB = 50;
+            
+            if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+                alert(`Tiedosto on liian suuri! Sallittu maksimikoko on ${MAX_SIZE_MB} MB.`);
+                fileInput.value = ''; // Nollataan valinta
+                return;
+            }
+
+            // UI päivitys lataustilaan
+            dropzoneContent.style.display = 'none';
+            loading.style.display = 'flex';
+            result.style.display = 'none';
+            dropzone.style.pointerEvents = 'none';
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Luetaan JSON-vastaus aina (sisältää joko url:n tai virheilmoituksen)
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Jos palvelin palautti virheen, heitetään se catch-lohkoon
+                    throw new Error(data.error || 'Lataus epäonnistui tuntemattomasta syystä.');
+                }
+                
+                // Näytetään onnistunut tulos
+                shareLink.value = data.url;
+                result.style.display = 'block';
+            } catch (error) {
+                // Näytetään selkeä virheilmoitus
+                alert('Virhe: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                dropzoneContent.style.display = 'block';
+                dropzone.style.pointerEvents = 'auto';
+                fileInput.value = ''; 
+            }
+        }
+
+        // Kopiointipainike
+        copyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            shareLink.select();
+            document.execCommand('copy');
+            alert('Linkki kopioitu!');
+        });
+    </script>
+</body>
+</html>
         <div id="result" style="display: none; padding: 20px; border: 1px solid green;">
             <p>Tiedosto ladattu onnistuneesti!</p>
             <input type="text" id="shareLink" readonly style="width: 80%; padding: 5px;" />
