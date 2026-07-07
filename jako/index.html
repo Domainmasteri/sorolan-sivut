@@ -1,60 +1,47 @@
-```html
 <!DOCTYPE html>
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorola Share - Jaa tiedostoja</title>
-    <!-- Tailwind CSS tyylejä varten (voit korvata omilla tyyleilläsi) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide-ikonit -->
+    <title>Sorola Share</title>
+    
+    <!-- TÄSSÄ ON LINKKI OMIIN TYYLEIHISI -->
+    <!-- Korvaa 'tyyli.css' sillä nimellä, mikä tiedosto tyylit-kansiossasi on -->
+    <link rel="stylesheet" href="/tyylit/tyyli.css">
+    
+    <!-- Lucide-ikonit, jos haluat säilyttää ne (vapaaehtoinen) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* Muutama custom tyyli drag & drop -efektille */
-        .drag-active {
-            border-color: #3b82f6 !important;
-            background-color: #eff6ff !important;
-        }
-    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Sorola Share</h1>
-            <p class="text-sm text-gray-500 mt-2">Jaa tiedostoja turvallisesti omalta palvelimelta</p>
-        </div>
+    <div class="share-container">
+        <h1>Jaa tiedostoja</h1>
 
         <!-- Drag & Drop alue -->
-        <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer transition-colors hover:bg-gray-50">
-            <input type="file" id="fileInput" class="hidden" />
-            <div id="dropzone-content" class="flex flex-col items-center">
-                <i data-lucide="upload-cloud" class="w-12 h-12 text-gray-400 mb-4"></i>
-                <p class="text-gray-600 font-medium">Raahaa tiedosto tähän</p>
-                <p class="text-xs text-gray-400 mt-1">tai klikkaa valitaksesi</p>
+        <div id="dropzone" class="dropzone" style="border: 2px dashed #ccc; padding: 40px; text-align: center; cursor: pointer; margin-bottom: 20px;">
+            <input type="file" id="fileInput" style="display: none;" />
+            
+            <div id="dropzone-content">
+                <i data-lucide="upload-cloud"></i>
+                <p>Raahaa tiedosto tähän tai klikkaa</p>
             </div>
             
             <!-- Latausanimaatio (piilotettu oletuksena) -->
-            <div id="loading" class="hidden flex-col items-center">
-                <i data-lucide="loader-2" class="w-10 h-10 text-blue-500 animate-spin mb-3"></i>
-                <p class="text-sm text-gray-600 font-medium">Ladataan pilveen...</p>
+            <div id="loading" style="display: none; flex-direction: column; align-items: center;">
+                <i data-lucide="loader-2"></i>
+                <p>Ladataan pilveen...</p>
             </div>
         </div>
 
         <!-- Tulosalue (piilotettu oletuksena) -->
-        <div id="result" class="hidden mt-6 bg-green-50 rounded-lg p-4 border border-green-200">
-            <p class="text-sm text-green-800 font-medium mb-2">Tiedosto ladattu onnistuneesti!</p>
-            <div class="flex items-center gap-2">
-                <input type="text" id="shareLink" readonly class="w-full bg-white border border-green-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none" />
-                <button id="copyBtn" class="bg-green-600 hover:bg-green-700 text-white p-2 rounded transition-colors" title="Kopioi linkki">
-                    <i data-lucide="copy" class="w-5 h-5"></i>
-                </button>
-            </div>
+        <div id="result" style="display: none; padding: 20px; border: 1px solid green;">
+            <p>Tiedosto ladattu onnistuneesti!</p>
+            <input type="text" id="shareLink" readonly style="width: 80%; padding: 5px;" />
+            <button id="copyBtn" style="padding: 5px 10px;">Kopioi</button>
         </div>
     </div>
 
     <script>
-        // Alustetaan ikonit
         lucide.createIcons();
 
         const dropzone = document.getElementById('dropzone');
@@ -71,14 +58,14 @@
         // Drag & drop efektit
         dropzone.addEventListener('dragover', (e) => {
             e.preventDefault();
-            dropzone.classList.add('drag-active');
+            dropzone.style.borderColor = 'blue';
         });
         dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('drag-active');
+            dropzone.style.borderColor = '#ccc';
         });
         dropzone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropzone.classList.remove('drag-active');
+            dropzone.style.borderColor = '#ccc';
             if (e.dataTransfer.files.length) {
                 handleUpload(e.dataTransfer.files[0]);
             }
@@ -94,16 +81,16 @@
         // Latauslogiikka
         async function handleUpload(file) {
             // UI päivitys lataustilaan
-            dropzoneContent.classList.add('hidden');
-            loading.classList.remove('hidden');
-            result.classList.add('hidden');
+            dropzoneContent.style.display = 'none';
+            loading.style.display = 'flex';
+            result.style.display = 'none';
             dropzone.style.pointerEvents = 'none';
 
             const formData = new FormData();
             formData.append('file', file);
 
             try {
-                // Lähetetään tiedosto Cloudflare Functionille
+                // Huom: /api/upload toimii koska se alkaa vinoviivalla (etsii repon juuresta functions-kansion)
                 const response = await fetch('/api/upload', {
                     method: 'POST',
                     body: formData
@@ -115,35 +102,24 @@
                 
                 // Näytetään tulos
                 shareLink.value = data.url;
-                result.classList.remove('hidden');
+                result.style.display = 'block';
             } catch (error) {
                 alert('Virhe tiedostoa ladattaessa: ' + error.message);
             } finally {
-                // Palautetaan UI alkutilaan
-                loading.classList.add('hidden');
-                dropzoneContent.classList.remove('hidden');
+                loading.style.display = 'none';
+                dropzoneContent.style.display = 'block';
                 dropzone.style.pointerEvents = 'auto';
-                fileInput.value = ''; // Nollataan input
+                fileInput.value = ''; 
             }
         }
 
-        // Kopioi leikepöydälle
+        // Kopiointipainike
         copyBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Estää dropzonen klikkauksen
+            e.stopPropagation();
             shareLink.select();
             document.execCommand('copy');
-            
-            // Pieni visuaalinen palaute
-            const icon = copyBtn.querySelector('i');
-            icon.setAttribute('data-lucide', 'check');
-            lucide.createIcons();
-            setTimeout(() => {
-                icon.setAttribute('data-lucide', 'copy');
-                lucide.createIcons();
-            }, 2000);
+            alert('Linkki kopioitu!');
         });
     </script>
 </body>
 </html>
-
-```
