@@ -3,7 +3,7 @@ export async function onRequestPost(context) {
         // ==========================================
         // SÄÄDÄ TIEDOSTORAJOTUS TÄSTÄ (Megatavuina)
         // ==========================================
-        const MAX_SIZE_MB = 50; 
+        const MAX_SIZE_MB = 5120; 
         const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
         const request = context.request;
