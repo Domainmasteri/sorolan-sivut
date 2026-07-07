@@ -42,5 +42,3 @@ export async function onRequestPost(context) {
         return new Response(`Palvelinvirhe: ${error.message}`, { status: 500 });
     }
 }
-
-```
