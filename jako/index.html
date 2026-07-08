@@ -3,59 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorola Share</title>
+    <title>Sorolan Sakki - Tiedostonjako</title>
     
-    <link rel="stylesheet" href="/tyylit/pohja.css">
-    <link rel="icon" type="image/svg+xml" href="tyylit/fav.ico">
+    <!-- Ladataan sivuston yhteinen tyylitiedosto -->
+    <link rel="stylesheet" href="../tyylit/pohja.css">
+    <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
     
+    <!-- Lucide ikonit -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Tiedostonjaon omat tyylit, jotka tukevat tummaa teemaa */
+        #dropzone {
+            border: 2px dashed #4a5568;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #11141d;
+            transition: all 0.2s ease;
+            color: #a0aec0;
+        }
+        
+        #dropzone:hover, #dropzone.dragover {
+            border-color: #ffaa00;
+            background: rgba(255, 170, 0, 0.05);
+            color: #ffaa00;
+        }
+        
+        #dropzone:hover p, #dropzone.dragover p {
+            color: #e2e8f0;
+        }
+
+        .lucide-icon-large {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 15px;
+            color: inherit;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .lataus-spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="share-container" style="max-width: 500px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
-        <h1>Jaa tiedostoja</h1>
+    <div class="laatikko">
+        <h1 class="otsikko">Sorola Share</h1>
 
-        <div class="settings" style="margin-bottom: 20px; background: #f3f4f6; padding: 15px; rounded: 8px;">
-            <div style="margin-bottom: 10px;">
-                <label style="display:block; font-size:14px; font-weight:bold; margin-bottom:5px;">Säilytysaika:</label>
-                <select id="expiryDays" style="width:100%; padding:8px;">
-                    <option value="1">1 päivä</option>
-                    <option value="3">3 päivää</option>
-                    <option value="7" selected>7 päivää (maksimi)</option>
-                </select>
-            </div>
-            <div>
-                <label style="display:block; font-size:14px; font-weight:bold; margin-bottom:5px;">Latauskertojen rajoitus (0 = rajaton):</label>
-                <input type="number" id="maxDownloads" value="0" min="0" style="width:100%; padding:8px; box-sizing: border-box;" />
+        <div class="osion-tausta">
+            <p style="margin: 0; text-align: center;">Jaa tiedostoja turvallisesti ja aseta niille säilytysaika tai latausrajoitus. Suurin sallittu tiedostokoko on 50 MB.</p>
+        </div>
+
+        <div class="osion-tausta">
+            <h2>Asetukset</h2>
+            <div class="flex-form">
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display:block; font-size:0.9rem; color:#a0aec0; margin-bottom:8px; font-weight:bold;">Säilytysaika:</label>
+                    <select id="expiryDays" class="syote" style="width: 100%; box-sizing: border-box;">
+                        <option value="1">1 päivä</option>
+                        <option value="3">3 päivää</option>
+                        <option value="7" selected>7 päivää (maksimi)</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="display:block; font-size:0.9rem; color:#a0aec0; margin-bottom:8px; font-weight:bold;">Latausrajoitus (0 = rajaton):</label>
+                    <input type="number" id="maxDownloads" class="syote" value="0" min="0" style="width: 100%; box-sizing: border-box;" />
+                </div>
             </div>
         </div>
 
-        <div id="dropzone" class="dropzone" style="border: 2px dashed #ccc; padding: 40px; text-align: center; cursor: pointer; margin-bottom: 20px; background: #fff;">
-            <input type="file" id="fileInput" style="display: none;" />
+        <div class="osion-tausta">
+            <h2>Lataa tiedosto</h2>
             
-            <div id="dropzone-content">
-                <i data-lucide="upload-cloud"></i>
-                <p>Raahaa tiedosto tähän tai klikkaa ladataksesi</p>
-            </div>
-            
-            <div id="loading" style="display: none; flex-direction: column; align-items: center;">
-                <i data-lucide="loader-2" style="animation: spin 1s linear infinite;"></i>
-                <p>Ladataan pilveen...</p>
+            <div id="dropzone">
+                <input type="file" id="fileInput" style="display: none;" />
+                
+                <div id="dropzone-content">
+                    <i data-lucide="upload-cloud" class="lucide-icon-large"></i>
+                    <p style="margin: 0; font-size: 1.1rem; font-weight: bold; color: #e2e8f0;">Raahaa tiedosto tähän</p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #a0aec0;">tai klikkaa ladataksesi laitteeltasi</p>
+                </div>
+                
+                <div id="loading" style="display: none; flex-direction: column; align-items: center;">
+                    <i data-lucide="loader-2" class="lucide-icon-large lataus-spinner" style="color: #ffaa00;"></i>
+                    <p style="margin: 0; font-size: 1.1rem; font-weight: bold; color: #ffaa00;">Ladataan pilveen...</p>
+                </div>
             </div>
         </div>
 
-        <div id="result" style="display: none; padding: 20px; border: 1px solid green; background: #f0fdf4;">
-            <p style="color: green; font-weight: bold;">Tiedosto ladattu onnistuneesti!</p>
-            <input type="text" id="shareLink" readonly style="width: 75%; padding: 8px;" />
-            <button id="copyBtn" style="padding: 8px 12px; cursor:pointer;">Kopioi</button>
+        <div id="result" class="osion-tausta" style="display: none; text-align: center;">
+            <h2 style="color: #4ade80; border-bottom: 1px solid #2d3748; padding-bottom: 10px;">✔ Tiedosto ladattu onnistuneesti!</h2>
+            <p style="margin-bottom: 20px; color: #a0aec0;">Jaa alla oleva linkki vastaanottajalle.</p>
+            
+            <input type="text" id="shareLink" class="syote" readonly style="width: 100%; box-sizing: border-box; text-align: center; color: #ffaa00; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px;" />
+            
+            <button id="copyBtn" class="nappula" style="width: 100%; max-width: 300px;">📋 Kopioi linkki</button>
         </div>
+
+        <a href="../" class="linkki-takaisin">← Takaisin pääsivulle</a>
     </div>
 
-    <style>
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-
     <script>
+        // Alustetaan ikonit
         lucide.createIcons();
 
         const dropzone = document.getElementById('dropzone');
@@ -66,13 +118,20 @@
         const shareLink = document.getElementById('shareLink');
         const copyBtn = document.getElementById('copyBtn');
 
+        // Klikkaus avaa tiedostoselaimen
         dropzone.addEventListener('click', () => fileInput.click());
 
-        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.style.borderColor = 'blue'; });
-        dropzone.addEventListener('dragleave', () => { dropzone.style.borderColor = '#ccc'; });
+        // Raahaus-efektit
+        dropzone.addEventListener('dragover', (e) => { 
+            e.preventDefault(); 
+            dropzone.classList.add('dragover'); 
+        });
+        dropzone.addEventListener('dragleave', () => { 
+            dropzone.classList.remove('dragover'); 
+        });
         dropzone.addEventListener('drop', (e) => {
             e.preventDefault();
-            dropzone.style.borderColor = '#ccc';
+            dropzone.classList.remove('dragover');
             if (e.dataTransfer.files.length) handleUpload(e.dataTransfer.files[0]);
         });
 
@@ -80,8 +139,9 @@
             if (this.files.length) handleUpload(this.files[0]);
         });
 
+        // Käsittely
         async function handleUpload(file) {
-            const MAX_SIZE_MB = 50; // Tiedostorajoitus megatavuina
+            const MAX_SIZE_MB = 50; 
             
             if (file.size > MAX_SIZE_MB * 1024 * 1024) {
                 alert(`Tiedosto on liian suuri! Sallittu maksimikoko on ${MAX_SIZE_MB} MB.`);
@@ -89,12 +149,12 @@
                 return;
             }
 
+            // Käyttöliittymä siirtyy "ladataan" -tilaan
             dropzoneContent.style.display = 'none';
             loading.style.display = 'flex';
             result.style.display = 'none';
             dropzone.style.pointerEvents = 'none';
 
-            // Haetaan käyttäjän asettamat rajoitukset käyttöliittymästä
             const expiryDays = document.getElementById('expiryDays').value;
             const maxDownloads = document.getElementById('maxDownloads').value;
 
@@ -114,7 +174,7 @@
                 if (!response.ok) throw new Error(data.error || 'Lataus epäonnistui.');
                 
                 shareLink.value = data.url;
-                result.style.display = 'block';
+                result.style.display = 'block'; // Näytetään tulos
             } catch (error) {
                 alert('Virhe: ' + error.message);
             } finally {
@@ -125,11 +185,24 @@
             }
         }
 
+        // Linkin kopiointi
         copyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             shareLink.select();
+            shareLink.setSelectionRange(0, 99999); // Mobiililaitteita varten
             document.execCommand('copy');
-            alert('Linkki kopioitu leikepöydälle!');
+            
+            // Vaihdetaan napin teksti hetkeksi
+            const alkuperainen = copyBtn.innerText;
+            copyBtn.innerText = "✅ Kopioitu!";
+            copyBtn.style.backgroundColor = "#218838"; // Vihreä
+            copyBtn.style.color = "white";
+            
+            setTimeout(() => {
+                copyBtn.innerText = alkuperainen;
+                copyBtn.style.backgroundColor = ""; 
+                copyBtn.style.color = "";
+            }, 2500);
         });
     </script>
 </body>
