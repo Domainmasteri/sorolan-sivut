@@ -2,10 +2,20 @@
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <title>Sorolan Sakki - QR-Luoja</title>
+    <title>Sorolan QR-koodin luoja - Luo QR-koodeja ilmaiseksi</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://sorola.fi/qr/">
     <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
     <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
+    <meta name="description" content="Luo QR-koodeja ilmaiseksi – nettisivuille, WiFi-verkoille, yhteystiedoille ja muulle. Nopea ja helppokäyttöinen QR-generaattori.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sorola.fi/qr/">
+    <meta property="og:site_name" content="Sorolan Sakki">
+    <meta property="og:title" content="Sorolan QR-koodin luoja">
+    <meta property="og:description" content="Luo QR-koodeja ilmaiseksi nettisivuille, WiFi-verkoille ja muulle.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Sorolan QR-koodin luoja">
+    <meta name="twitter:description" content="Luo QR-koodeja ilmaiseksi.">
     <style>
         .kentta-ryhma { display: none; flex-direction: column; gap: 15px; margin-top: 15px; }
         .kentta-ryhma.aktiivinen { display: flex; }
@@ -32,6 +42,7 @@
     </style>
 </head>
 <body>
+    <a href="#paaosio" class="skip-to-content">Hyppää pääsisältöön</a>
 
     <div class="laatikko">
         <h1 class="otsikko">QR-koodin luoja</h1>
@@ -40,10 +51,12 @@
             <p style="margin: 0; text-align: center;">Luo monipuolisia QR-koodeja! Voit jakaa nettisivuja, yhteystietoja tai vaikka kotisi WiFi-salasanan.</p>
         </div>
 
+        <main id="paaosio">
         <div class="osion-tausta">
             <h2>1. Valitse tyyppi ja syötä tiedot</h2>
             
-            <select id="qr-tyyppi" class="syote">
+            <label for="qr-tyyppi" class="sr-only">QR-koodin tyyppi</label>
+            <select id="qr-tyyppi" class="syote" aria-label="QR-koodin tyyppi">
                 <option value="url">Nettisivu (URL)</option>
                 <option value="text">Vapaa teksti</option>
                 <option value="wifi">WiFi-verkko</option>
@@ -53,17 +66,17 @@
             </select>
 
             <div id="kentat-url" class="kentta-ryhma aktiivinen">
-                <input type="url" id="val-url" class="syote" placeholder="https://soro.la">
+                <input type="url" id="val-url" class="syote" placeholder="https://soro.la" aria-label="URL-osoite">
             </div>
 
             <div id="kentat-text" class="kentta-ryhma">
-                <textarea id="val-text" class="syote" placeholder="Kirjoita viestisi tähän..." rows="3"></textarea>
+                <textarea id="val-text" class="syote" placeholder="Kirjoita viestisi tähän..." rows="3" aria-label="Vapaa teksti"></textarea>
             </div>
 
             <div id="kentat-wifi" class="kentta-ryhma">
-                <input type="text" id="val-wifi-ssid" class="syote" placeholder="Verkon nimi (SSID)">
-                <input type="text" id="val-wifi-pass" class="syote" placeholder="Salasana">
-                <select id="val-wifi-type" class="syote">
+                <input type="text" id="val-wifi-ssid" class="syote" placeholder="Verkon nimi (SSID)" aria-label="WiFi-verkon nimi (SSID)">
+                <input type="text" id="val-wifi-pass" class="syote" placeholder="Salasana" aria-label="WiFi-salasana">
+                <select id="val-wifi-type" class="syote" aria-label="WiFi-suojaustyyppi">
                     <option value="WPA">WPA/WPA2 (Yleisin)</option>
                     <option value="WEP">WEP</option>
                     <option value="nopass">Ei salasanaa</option>
@@ -71,21 +84,21 @@
             </div>
 
             <div id="kentat-email" class="kentta-ryhma">
-                <input type="email" id="val-email-osoite" class="syote" placeholder="vastaanottaja@esimerkki.fi">
-                <input type="text" id="val-email-otsikko" class="syote" placeholder="Viestin otsikko">
+                <input type="email" id="val-email-osoite" class="syote" placeholder="vastaanottaja@esimerkki.fi" aria-label="Sähköpostiosoite">
+                <input type="text" id="val-email-otsikko" class="syote" placeholder="Viestin otsikko" aria-label="Sähköpostin otsikko">
             </div>
 
             <div id="kentat-phone" class="kentta-ryhma">
-                <input type="tel" id="val-phone" class="syote" placeholder="+358401234567">
+                <input type="tel" id="val-phone" class="syote" placeholder="+358401234567" aria-label="Puhelinnumero">
             </div>
 
             <div id="kentat-sms" class="kentta-ryhma">
-                <input type="tel" id="val-sms-numero" class="syote" placeholder="Vastaanottajan numero">
-                <input type="text" id="val-sms-viesti" class="syote" placeholder="Viestin sisältö">
+                <input type="tel" id="val-sms-numero" class="syote" placeholder="Vastaanottajan numero" aria-label="Vastaanottajan puhelinnumero">
+                <input type="text" id="val-sms-viesti" class="syote" placeholder="Viestin sisältö" aria-label="Tekstiviestin sisältö">
             </div>
 
             <div class="asetus-rivi">
-                <label>Koodin väri:</label>
+                <label for="qr-vari">Koodin väri:</label>
                 <input type="color" id="qr-vari" value="#000000" style="cursor: pointer; height: 40px; width: 60px; background: none; border: 1px solid #4a5568; border-radius: 6px;">
             </div>
 
@@ -96,11 +109,12 @@
             <h2>Valmis koodi</h2>
             
             <div id="qr-tulos-laatikko">
-                <img id="qr-kuva" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://soro.la" alt="QR Koodi">
+                <img id="qr-kuva" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://soro.la" alt="Generoitu QR-koodi" loading="lazy">
             </div>
             
             <button id="lataa-btn" class="nappula" style="background-color: #218838; color: white;">Lataa kuvana (PNG)</button>
         </div>
+        </main>
 
         <a href="../" class="linkki-takaisin">← Takaisin pääsivulle</a>
     </div>

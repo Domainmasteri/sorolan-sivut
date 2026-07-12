@@ -23,11 +23,9 @@ async function tarkistaValtuutus(request, env) {
 
 function luoSatunnainenPolku(pituus = 5) {
     const merkit = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    let tulos = '';
-    for (let i = 0; i < pituus; i++) {
-        tulos += merkit.charAt(Math.floor(Math.random() * merkit.length));
-    }
-    return tulos;
+    const randomValues = new Uint8Array(pituus);
+    crypto.getRandomValues(randomValues);
+    return Array.from(randomValues).map(v => merkit[v % merkit.length]).join('');
 }
 
 export async function onRequest(context) {
