@@ -2,3 +2,4 @@ User-agent: *
 Disallow: /admin/
 Disallow: /api/
 Disallow: /functions/
+Sitemap: https://sorola.fi/sitemap.xml
