@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   
+   <!-- Etusivu -->
+   <url>
+      <loc>https://sorola.fi/</loc>
+      <priority>1.0</priority>
+   </url>
+   
+   <!-- IT-ohjeet -->
+   <url>
+      <loc>https://sorola.fi/ohjeet/</loc>
+      <priority>0.8</priority>
+   </url>
+   
+   <!-- Ansioluettelot ja portfolio -->
+   <url>
+      <loc>https://sorola.fi/ansioluettelot/</loc>
+      <priority>0.8</priority>
+   </url>
+   
+   <!-- Väliaikainen tiedostonjako -->
+   <url>
+      <loc>https://sorola.fi/jako/</loc>
+      <priority>0.7</priority>
+   </url>
+   
+   <!-- Linkkilyhennin -->
+   <url>
+      <loc>https://sorola.fi/lyhennin/</loc>
+      <priority>0.7</priority>
+   </url>
+
+</urlset>
