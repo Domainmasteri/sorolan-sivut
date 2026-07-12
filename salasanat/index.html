@@ -2,10 +2,20 @@
 <html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <title>Sorolan Sakki - Salasanakone</title>
+    <title>Sorolan Salasanakone - Luo vahvoja salasanoja</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://sorola.fi/salasanat/">
     <link rel="stylesheet" type="text/css" href="../tyylit/pohja.css">
     <link rel="icon" type="image/svg+xml" href="../tyylit/fav.ico">
+    <meta name="description" content="Luo vahvoja ja turvallisia salasanoja ilmaiseksi. Valitse pituus ja merkkityypit – salasana generoidaan suoraan selaimessasi, ei palvelimella.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sorola.fi/salasanat/">
+    <meta property="og:site_name" content="Sorolan Sakki">
+    <meta property="og:title" content="Sorolan Salasanakone">
+    <meta property="og:description" content="Luo vahvoja salasanoja selaimessasi turvallisesti.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Sorolan Salasanakone">
+    <meta name="twitter:description" content="Luo vahvoja salasanoja selaimessasi turvallisesti.">
     <style>
         /* Salasanakoneen omat mukautetut asettelut uuteen teemaan sopiviksi */
         .asetus-rivi {
@@ -48,6 +58,7 @@
     </style>
 </head>
 <body>
+    <a href="#paaosio" class="skip-to-content">Hyppää pääsisältöön</a>
 
     <div class="laatikko">
         <h1 class="otsikko">Salasanakone</h1>
@@ -56,11 +67,12 @@
             <p style="margin: 0; text-align: center;">Luo vahvoja ja turvallisia salasanoja murtovarmuuden parantamiseksi. Valitse pituus ja merkit alta.</p>
         </div>
 
+        <main id="paaosio">
         <div class="osion-tausta">
             <h2>1. Muokkaa asetuksia</h2>
             
             <div class="slider-kontti">
-                <label>Salasanan pituus: <span id="pituus-arvo" style="color: #ffaa00; font-weight: bold;">16</span> merkkiä</label>
+                <label for="pituus-slider">Salasanan pituus: <span id="pituus-arvo" style="color: #ffaa00; font-weight: bold;">16</span> merkkiä</label>
                 <input type="range" id="pituus-slider" min="6" max="32" value="16">
             </div>
 
@@ -91,11 +103,13 @@
             <h2>Valmis salasana</h2>
             
             <div style="margin-bottom: 20px;">
-                <input type="text" id="valmis-salasana" class="syote" readonly placeholder="Paina Arvo-nappia">
+                <label for="valmis-salasana" class="sr-only">Generoitu salasana</label>
+                <input type="text" id="valmis-salasana" class="syote" readonly placeholder="Paina Arvo-nappia" aria-label="Generoitu salasana">
             </div>
             
             <button id="kopioi-btn" class="nappula" style="background-color: #218838; color: white;">📋 Kopioi leikepöydälle</button>
         </div>
+        </main>
 
         <a href="../" class="linkki-takaisin">← Takaisin pääsivulle</a>
     </div>
