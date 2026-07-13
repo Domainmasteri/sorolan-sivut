@@ -49,11 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('download') !== '1') return;
 
-    const pageName = window.location.pathname.split('/').filter(Boolean).pop() || '';
-    const filenameByPage = {
-        'hakemus-it.html': 'Markus_Sorola_Avoin_Hakemus_IT.pdf',
-        'hakemus-jakelu.html': 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf'
-    };
+    const pathname = window.location.pathname.toLowerCase();
+    let filename = 'Markus_Sorola_Avoin_Hakemus.pdf';
 
-    generatePDF(filenameByPage[pageName] || 'Markus_Sorola_Tyohakemus.pdf');
+    if (pathname.includes('hakemus-it')) {
+        filename = 'Markus_Sorola_Avoin_Hakemus_IT.pdf';
+    } else if (pathname.includes('hakemus-jakelu')) {
+        filename = 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf';
+    } else {
+        console.warn('Automaattinen PDF-lataus käytti oletusnimeä tuntemattomalla hakemusreitillä:', pathname);
+    }
+
+    generatePDF(filename);
 });
