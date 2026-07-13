@@ -8,6 +8,7 @@ const ROOT = __dirname;
 const DIST = path.join(ROOT, 'dist');
 const I18N_DIR = path.join(ROOT, 'i18n');
 const SITE_ORIGIN = 'https://sorola.fi';
+const SITE_ORIGIN_PATTERN = new RegExp(`${escapeRegExp(SITE_ORIGIN)}(?:/en)?(?:/[^"'\\s<]*)?`, 'g');
 const TEXT_FILE_EXTENSIONS = new Set(['.html', '.js', '.xml', '.txt']);
 const ROOT_ONLY_FILES = new Set(['_headers', 'robots.txt', 'sitemap.xml']);
 const IGNORE_NAMES = new Set(['.git', 'dist', 'node_modules', 'i18n', 'functions', 'package.json', 'package-lock.json', 'build.mjs', 'README.md', 'route-localization.js']);
@@ -199,7 +200,7 @@ function setHtmlLanguage(content, locale) {
 }
 
 function rewriteAbsoluteSiteUrls(content, locale) {
-  return content.replace(/https:\/\/sorola\.fi(?:\/en)?(?:\/[^"'\s<]*)?/g, (match) => localizeAbsoluteUrl(match, locale));
+  return content.replace(SITE_ORIGIN_PATTERN, (match) => localizeAbsoluteUrl(match, locale));
 }
 
 function rewriteDocumentUrls(content, relativePath, locale) {
@@ -346,6 +347,10 @@ function stripEnglishPrefix(pathname) {
   if (pathname === '/en') return '/';
   if (pathname.startsWith('/en/')) return pathname.slice(3);
   return pathname;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 async function writeSitemap() {
