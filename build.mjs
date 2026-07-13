@@ -11,6 +11,26 @@ const TEXT_FILE_EXTENSIONS = new Set(['.html', '.js', '.xml', '.txt']);
 const ROOT_ONLY_FILES = new Set(['_headers', 'robots.txt', 'sitemap.xml']);
 const IGNORE_NAMES = new Set(['.git', 'dist', 'node_modules', 'i18n', 'functions', 'package.json', 'package-lock.json', 'build.mjs', 'README.md']);
 const ATTRIBUTE_PATTERN = /(placeholder|aria-label|content|title|alt)=(["'])(.*?)\2/gi;
+const URL_ATTRIBUTE_PATTERN = /\b(href|src|action)=(["'])(.*?)\2/gi;
+const EN_PATH_SEGMENTS = new Map([
+  ['ansioluettelot', 'resume'],
+  ['cv-make', 'cv-builder'],
+  ['hakemus-it', 'it-application'],
+  ['hakemus-jakelu', 'delivery-application'],
+  ['hakemus-make', 'application-builder'],
+  ['hakemus-it.html', 'it-application.html'],
+  ['hakemus-jakelu.html', 'delivery-application.html'],
+  ['huumorikuvat', 'funny-pictures'],
+  ['jako', 'share'],
+  ['linkinlyhennin', 'link-shortener'],
+  ['linkinlyhennin.html', 'link-shortener.html'],
+  ['lyhennin', 'shortener'],
+  ['lyhennin.html', 'shortener.html'],
+  ['salasanat', 'passwords'],
+  ['salasanat.html', 'passwords.html'],
+  ['vieraskirja', 'guestbook'],
+  ['ohjeet', 'guides']
+]);
 
 const locales = {
   fi: JSON.parse(await fs.readFile(path.join(I18N_DIR, 'fi.json'), 'utf8')),
@@ -61,7 +81,7 @@ async function collectFiles(startDir) {
 
 async function writeLocalizedFile(relativePath, locale, baseDir) {
   const sourcePath = path.join(ROOT, relativePath);
-  const targetPath = path.join(baseDir, relativePath);
+  const targetPath = path.join(baseDir, localizeRelativePath(relativePath, locale));
   await fs.mkdir(path.dirname(targetPath), { recursive: true });
 
   const extension = path.extname(relativePath).toLowerCase();
@@ -85,6 +105,7 @@ function localizeHtml(content, relativePath, locale) {
   const rules = getRules(locales[locale].html, relativePath);
   let localized = translateHtmlStructure(content, rules);
   localized = applyRawReplacements(localized, rules.raw);
+  localized = rewriteDocumentUrls(localized, relativePath, locale);
   localized = setHtmlLanguage(localized, locale);
   localized = rewriteAbsoluteSiteUrls(localized, locale);
   localized = upsertCanonical(localized, relativePath, locale);
@@ -199,6 +220,45 @@ function rewriteAbsoluteSiteUrls(content, locale) {
   return content.replace(/https:\/\/sorola\.fi(?:\/en)?(?:\/[^"'\s<]*)?/g, (match) => localizeAbsoluteUrl(match, locale));
 }
 
+function rewriteDocumentUrls(content, relativePath, locale) {
+  if (locale !== 'en') return content;
+
+  return content.replace(URL_ATTRIBUTE_PATTERN, (match, attribute, quote, value) => {
+    const localized = localizeDocumentUrl(value, relativePath, locale);
+    return `${attribute}=${quote}${localized}${quote}`;
+  });
+}
+
+function localizeDocumentUrl(value, relativePath, locale) {
+  if (
+    !value ||
+    value.startsWith('#') ||
+    value.startsWith('mailto:') ||
+    value.startsWith('tel:') ||
+    value.startsWith('data:') ||
+    value.startsWith('javascript:')
+  ) {
+    return value;
+  }
+
+  try {
+    const baseUrl = new URL(`${SITE_ORIGIN}${sourceRelativeToWebPath(relativePath)}`);
+    const parsed = new URL(value, baseUrl);
+    if (parsed.origin !== SITE_ORIGIN) return value;
+    if (parsed.pathname.startsWith('/api/') || parsed.pathname.startsWith('/functions/')) return value;
+
+    parsed.pathname = localizeSitePathname(parsed.pathname, locale);
+
+    if (/^https?:\/\//i.test(value)) {
+      return parsed.toString();
+    }
+
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return value;
+  }
+}
+
 function upsertCanonical(content, relativePath, locale) {
   const canonicalUrl = `${SITE_ORIGIN}${localizedWebPath(relativePath, locale)}`;
   const canonicalTag = `<link rel="canonical" href="${canonicalUrl}">`;
@@ -246,7 +306,7 @@ function escapeHtml(value) {
 }
 
 function localizedWebPath(relativePath, locale) {
-  const basePath = sourceRelativeToWebPath(relativePath);
+  const basePath = sourceRelativeToWebPath(localizeRelativePath(relativePath, locale));
   if (locale === 'en') {
     return basePath === '/' ? '/en/' : `/en${basePath}`;
   }
@@ -267,17 +327,43 @@ function localizeAbsoluteUrl(url, locale) {
     return url;
   }
 
-  let pathname = parsed.pathname;
-  if (locale === 'en' && !pathname.startsWith('/en/')) {
-    pathname = pathname === '/' ? '/en/' : `/en${pathname}`;
-  }
-  if (locale === 'fi' && pathname.startsWith('/en/')) {
-    pathname = pathname.slice(3);
-    if (!pathname.startsWith('/')) pathname = `/${pathname}`;
+  parsed.pathname = localizeSitePathname(parsed.pathname, locale);
+  return parsed.toString();
+}
+
+function localizeRelativePath(relativePath, locale) {
+  const normalized = relativePath.replace(/\\/g, '/');
+  if (locale !== 'en') return normalized;
+  return normalized
+    .split('/')
+    .map((segment) => EN_PATH_SEGMENTS.get(segment) || segment)
+    .join('/');
+}
+
+function localizeSitePathname(pathname, locale) {
+  const normalized = stripEnglishPrefix(pathname);
+  const trailingSlash = normalized.endsWith('/');
+  const localizedSegments = normalized
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => (locale === 'en' ? EN_PATH_SEGMENTS.get(segment) || segment : segment));
+
+  let localizedPath = localizedSegments.length ? `/${localizedSegments.join('/')}` : '/';
+  if (trailingSlash && localizedPath !== '/' && !localizedPath.endsWith('/')) {
+    localizedPath += '/';
   }
 
-  parsed.pathname = pathname;
-  return parsed.toString();
+  if (locale === 'en') {
+    return localizedPath === '/' ? '/en/' : `/en${localizedPath}`;
+  }
+
+  return localizedPath;
+}
+
+function stripEnglishPrefix(pathname) {
+  if (pathname === '/en') return '/';
+  if (pathname.startsWith('/en/')) return pathname.slice(3);
+  return pathname;
 }
 
 async function writeSitemap() {
