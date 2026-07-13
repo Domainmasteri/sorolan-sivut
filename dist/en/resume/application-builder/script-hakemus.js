@@ -37,19 +37,26 @@ function generatePDF(tiedostonimi = 'Markus_Sorola_Tyohakemus.pdf') {
         margin:       0,
         filename:     tiedostonimi, 
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+        html2canvas:  {
+            scale: 2,
+            useCORS: true,
+            scrollY: 0,
+            ignoreElements: (node) => node.classList?.contains('language-overlay') || node.classList?.contains('btn-download')
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Luodaan PDF ja palautetaan tyylit ennalleen
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .catch((error) => {
-            console.error('Työhakemuksen PDF:n luonti epäonnistui:', error);
-        })
-        .finally(restoreStyles);
+    requestAnimationFrame(() => {
+        // Luodaan PDF ja palautetaan tyylit ennalleen
+        html2pdf()
+            .set(opt)
+            .from(element)
+            .save()
+            .catch((error) => {
+                console.error('Työhakemuksen PDF:n luonti epäonnistui:', error);
+            })
+            .finally(restoreStyles);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,9 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pathname = window.location.pathname.toLowerCase();
     let tiedostonimi = 'Markus_Sorola_Avoin_Hakemus.pdf';
 
-    if (pathname.includes('hakemus-it')) {
+    if (pathname.includes('hakemus-it') || pathname.includes('it-application')) {
         tiedostonimi = 'Markus_Sorola_Avoin_Hakemus_IT.pdf';
-    } else if (pathname.includes('hakemus-jakelu')) {
+    } else if (pathname.includes('hakemus-jakelu') || pathname.includes('delivery-application')) {
         tiedostonimi = 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf';
     } else {
         console.info('Automaattinen PDF-lataus käytti oletusnimeä tuntemattomalla hakemusreitillä:', pathname);
