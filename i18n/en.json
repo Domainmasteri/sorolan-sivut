@@ -233,8 +233,8 @@
         "Täältä löydät Sorolan palveluiden käyttöohjeet.": "Here you'll find usage guides for Sorola services.",
         "Salaa tiedostosi ennen niiden tallentamista pilveen.": "Encrypt your files before storing them in the cloud.",
         "Opettele luomaan lyhyitä ja helposti jaettavia linkkejä.": "Learn how to create short and easy-to-share links.",
-        "Linkin lyhennin": "URL-Shortener",
-        "Salasanaholvi": "Password vault",
+        "LINKIN LYHENNIN": "URL-Shortener",
+        "SALASANAHOLVI": "Password vault",
         "Luo ja varastoi vahvoja salasanoja.": "Create and store strong passwords."
       },
       "attributes": {
