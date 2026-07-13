@@ -27,19 +27,26 @@ function generatePDF() {
         margin:       0,
         filename:     'Markus_Sorola_CV.pdf',
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, // scrollY: 0 estää selaimen vierityksen aiheuttamat bugit
+        html2canvas:  {
+            scale: 2,
+            useCORS: true,
+            scrollY: 0,
+            ignoreElements: (node) => node.classList?.contains('language-overlay') || node.classList?.contains('btn-download')
+        }, // scrollY: 0 estää selaimen vierityksen aiheuttamat bugit
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Luodaan PDF
-    html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
-        .catch((error) => {
-            console.error('CV PDF:n luonti epäonnistui:', error);
-        })
-        .finally(restoreStyles);
+    requestAnimationFrame(() => {
+        // Luodaan PDF
+        html2pdf()
+            .set(opt)
+            .from(element)
+            .save()
+            .catch((error) => {
+                console.error('CV PDF:n luonti epäonnistui:', error);
+            })
+            .finally(restoreStyles);
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
