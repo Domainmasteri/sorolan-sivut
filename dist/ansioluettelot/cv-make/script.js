@@ -2,7 +2,7 @@ function generatePDF() {
     const element = document.getElementById('cv');
     const btn = document.querySelector('.btn-download');
     const languageOverlay = document.querySelector('.language-overlay');
-    const previousLanguageOverlayDisplay = languageOverlay ? languageOverlay.style.display : '';
+    const previousLanguageOverlayDisplay = languageOverlay ? getComputedStyle(languageOverlay).display : null;
     const restoreStyles = () => {
         btn.style.display = 'block';
         if (languageOverlay) {

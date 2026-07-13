@@ -12,7 +12,7 @@ function generatePDF(tiedostonimi = 'Markus_Sorola_Tyohakemus.pdf') {
     const element = document.getElementById('hakemus');
     const btn = document.querySelector('.btn-download');
     const languageOverlay = document.querySelector('.language-overlay');
-    const previousLanguageOverlayDisplay = languageOverlay ? languageOverlay.style.display : '';
+    const previousLanguageOverlayDisplay = languageOverlay ? getComputedStyle(languageOverlay).display : null;
     const restoreStyles = () => {
         btn.style.display = 'block';
         if (languageOverlay) {
@@ -50,15 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (params.get('download') !== '1') return;
 
     const pathname = window.location.pathname.toLowerCase();
-    let filename = 'Markus_Sorola_Avoin_Hakemus.pdf';
+    let tiedostonimi = 'Markus_Sorola_Avoin_Hakemus.pdf';
 
     if (pathname.includes('hakemus-it')) {
-        filename = 'Markus_Sorola_Avoin_Hakemus_IT.pdf';
+        tiedostonimi = 'Markus_Sorola_Avoin_Hakemus_IT.pdf';
     } else if (pathname.includes('hakemus-jakelu')) {
-        filename = 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf';
+        tiedostonimi = 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf';
     } else {
-        console.warn('Automaattinen PDF-lataus käytti oletusnimeä tuntemattomalla hakemusreitillä:', pathname);
+        console.info('Automaattinen PDF-lataus käytti oletusnimeä tuntemattomalla hakemusreitillä:', pathname);
     }
 
-    generatePDF(filename);
+    generatePDF(tiedostonimi);
 });
