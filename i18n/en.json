@@ -471,7 +471,9 @@
         "📄 Katso CV": "📄 View CV",
         "Markus Sorolan työhakemukset": "Markus Sorola's job applications",
         "Katso tai lataa Markuksen ajantasainen työhakemus alta.": "View or download Markus's current job applications below.",
-        "📄 Katso työhakemukset": "📄 View job applications"
+        "📄 Katso työhakemukset": "📄 View job applications",
+        "Logistiikan hakemus": "The logistics application",
+        "IT-alan hakemus": "The IT application"
       },
       "attributes": {
         "Markus Sorolan ansioluettelo, työkokemus ja IT-projektit. Etsitkö osaavaa tekijää tiimiisi? Tutustu CV:hen ja portfolioon.": "Markus Sorola's CV, work experience, and IT projects. Looking for a capable addition to your team? Explore the CV and portfolio.",
@@ -480,17 +482,15 @@
         "Tutustu työkokemukseeni ja projekteihini.": "Explore my work experience and projects."
       }
     },
-    "ansioluettelot/index.html": {
+    "ansioluettelot/hakemus-make/index.html": {
       "text": {
         "Työhakemukset - Sorolan Sakki": "Job applications - Sorolan Sakki",
         "Markuksen työhakemukset": "Markus's job applications",
         "Täältä voit valita ja avata haluamasi työhakemuspohjan.": "Here you can choose and open the job application template you want.",
         "Jakelu- ja logistiikka-ala": "Distribution and logistics",
         "Kohdennettu hakemus varhaisjakelun, rutiinien hallinnan ja reittisuunnittelun tehtäviin.": "A targeted application for early-morning delivery, routine management, and route planning roles.",
-        "Logistiikan hakemus": "The logistics application",
         "IT-ala ja verkkokehitys": "IT and web development",
-        "Kohdennettu hakemus infrastruktuurin, järjestelmänhallinnan ja verkkokehityksen tehtäviin.": "A targeted application for infrastructure, systems administration, and web development roles.",
-        "IT-alan hakemus": "The IT application"
+        "Kohdennettu hakemus infrastruktuurin, järjestelmänhallinnan ja verkkokehityksen tehtäviin.": "A targeted application for infrastructure, systems administration, and web development roles."
       },
       "attributes": {
         "Täältä löydät Markuksen kohdennetut työhakemuspohjat eri aloille.": "Here you'll find Markus's targeted job application templates for different industries.",
