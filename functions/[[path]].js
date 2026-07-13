@@ -1,3 +1,5 @@
+import { localizeEnglishRouteSegment } from '../route-localization.js';
+
 // functions/[[path]].js
 export async function onRequestGet(context) {
     const { request, env, params, next } = context;
@@ -6,6 +8,11 @@ export async function onRequestGet(context) {
     const url = new URL(request.url);
     const hostname = url.hostname.replace('www.', '');
     const pathArray = params.path;
+
+    const legacyEnglishRedirect = getLegacyEnglishRedirect(url);
+    if (legacyEnglishRedirect) {
+        return Response.redirect(legacyEnglishRedirect, 302);
+    }
 
     // --- SRLA.FI LIIKENNE ---
     if (hostname === 'srla.fi') {
@@ -50,4 +57,27 @@ export async function onRequestGet(context) {
     }
 
     return next();
+}
+
+function getLegacyEnglishRedirect(url) {
+    if (url.hostname.replace('www.', '') !== 'sorola.fi' || !url.pathname.startsWith('/en/')) {
+        return null;
+    }
+
+    const hasTrailingSlash = url.pathname.endsWith('/');
+    const segments = url.pathname.split('/').filter(Boolean);
+    const translated = segments.map((segment, index) => (
+        index === 0 ? segment : localizeEnglishRouteSegment(segment)
+    ));
+
+    if (translated.join('/') === segments.join('/')) {
+        return null;
+    }
+
+    let pathname = `/${translated.join('/')}`;
+    if (hasTrailingSlash && !pathname.endsWith('/')) {
+        pathname += '/';
+    }
+
+    return `${url.origin}${pathname}${url.search}`;
 }
