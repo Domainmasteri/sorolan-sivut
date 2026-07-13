@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('download') !== '1') return;
 
-    const pageName = window.location.pathname.split('/').pop() || '';
+    const pageName = window.location.pathname.split('/').filter(Boolean).pop() || '';
     const filenameByPage = {
         'hakemus-it.html': 'Markus_Sorola_Avoin_Hakemus_IT.pdf',
         'hakemus-jakelu.html': 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf'
