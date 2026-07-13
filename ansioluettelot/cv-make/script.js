@@ -34,3 +34,10 @@ function generatePDF() {
     // Luodaan PDF
     html2pdf().set(opt).from(element).save().finally(restoreStyles);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('download') === '1') {
+        generatePDF();
+    }
+});

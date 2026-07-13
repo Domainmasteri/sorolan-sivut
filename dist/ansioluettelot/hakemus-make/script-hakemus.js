@@ -13,6 +13,14 @@ function generatePDF(tiedostonimi = 'Markus_Sorola_Tyohakemus.pdf') {
     const btn = document.querySelector('.btn-download');
     const languageOverlay = document.querySelector('.language-overlay');
     const previousLanguageOverlayDisplay = languageOverlay ? languageOverlay.style.display : '';
+    const restoreStyles = () => {
+        btn.style.display = 'block';
+        if (languageOverlay) {
+            languageOverlay.style.display = previousLanguageOverlayDisplay;
+        }
+        element.style.margin = '2rem auto';
+        element.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+    };
     
     // Piilotetaan painike tulostuksen ajaksi
     btn.style.display = 'none';
@@ -34,19 +42,18 @@ function generatePDF(tiedostonimi = 'Markus_Sorola_Tyohakemus.pdf') {
     };
 
     // Luodaan PDF ja palautetaan tyylit ennalleen
-    html2pdf().set(opt).from(element).save().then(() => {
-        btn.style.display = 'block';
-        if (languageOverlay) {
-            languageOverlay.style.display = previousLanguageOverlayDisplay;
-        }
-        element.style.margin = '2rem auto';
-        element.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-    }).catch(() => {
-        btn.style.display = 'block';
-        if (languageOverlay) {
-            languageOverlay.style.display = previousLanguageOverlayDisplay;
-        }
-        element.style.margin = '2rem auto';
-        element.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
-    });
+    html2pdf().set(opt).from(element).save().finally(restoreStyles);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('download') !== '1') return;
+
+    const pageName = window.location.pathname.split('/').pop() || '';
+    const filenameByPage = {
+        'hakemus-it.html': 'Markus_Sorola_Avoin_Hakemus_IT.pdf',
+        'hakemus-jakelu.html': 'Markus_Sorola_Avoin_Hakemus_Logistiikka.pdf'
+    };
+
+    generatePDF(filenameByPage[pageName] || 'Markus_Sorola_Tyohakemus.pdf');
+});
