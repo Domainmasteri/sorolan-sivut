@@ -42,7 +42,14 @@ function generatePDF(tiedostonimi = 'Markus_Sorola_Tyohakemus.pdf') {
     };
 
     // Luodaan PDF ja palautetaan tyylit ennalleen
-    html2pdf().set(opt).from(element).save().finally(restoreStyles);
+    html2pdf()
+        .set(opt)
+        .from(element)
+        .save()
+        .catch((error) => {
+            console.error('Työhakemuksen PDF:n luonti epäonnistui:', error);
+        })
+        .finally(restoreStyles);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
