@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { localizeEnglishRouteSegment } from './route-localization.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = __dirname;
@@ -9,28 +10,9 @@ const I18N_DIR = path.join(ROOT, 'i18n');
 const SITE_ORIGIN = 'https://sorola.fi';
 const TEXT_FILE_EXTENSIONS = new Set(['.html', '.js', '.xml', '.txt']);
 const ROOT_ONLY_FILES = new Set(['_headers', 'robots.txt', 'sitemap.xml']);
-const IGNORE_NAMES = new Set(['.git', 'dist', 'node_modules', 'i18n', 'functions', 'package.json', 'package-lock.json', 'build.mjs', 'README.md']);
+const IGNORE_NAMES = new Set(['.git', 'dist', 'node_modules', 'i18n', 'functions', 'package.json', 'package-lock.json', 'build.mjs', 'README.md', 'route-localization.js']);
 const ATTRIBUTE_PATTERN = /(placeholder|aria-label|content|title|alt)=(["'])(.*?)\2/gi;
 const URL_ATTRIBUTE_PATTERN = /\b(href|src|action)=(["'])(.*?)\2/gi;
-const EN_PATH_SEGMENTS = new Map([
-  ['ansioluettelot', 'resume'],
-  ['cv-make', 'cv-builder'],
-  ['hakemus-it', 'it-application'],
-  ['hakemus-jakelu', 'delivery-application'],
-  ['hakemus-make', 'application-builder'],
-  ['hakemus-it.html', 'it-application.html'],
-  ['hakemus-jakelu.html', 'delivery-application.html'],
-  ['huumorikuvat', 'funny-pictures'],
-  ['jako', 'share'],
-  ['linkinlyhennin', 'link-shortener'],
-  ['linkinlyhennin.html', 'link-shortener.html'],
-  ['lyhennin', 'shortener'],
-  ['lyhennin.html', 'shortener.html'],
-  ['salasanat', 'passwords'],
-  ['salasanat.html', 'passwords.html'],
-  ['vieraskirja', 'guestbook'],
-  ['ohjeet', 'guides']
-]);
 
 const locales = {
   fi: JSON.parse(await fs.readFile(path.join(I18N_DIR, 'fi.json'), 'utf8')),
@@ -336,7 +318,7 @@ function localizeRelativePath(relativePath, locale) {
   if (locale !== 'en') return normalized;
   return normalized
     .split('/')
-    .map((segment) => EN_PATH_SEGMENTS.get(segment) || segment)
+    .map((segment) => localizeEnglishRouteSegment(segment))
     .join('/');
 }
 
@@ -346,7 +328,7 @@ function localizeSitePathname(pathname, locale) {
   const localizedSegments = normalized
     .split('/')
     .filter(Boolean)
-    .map((segment) => (locale === 'en' ? EN_PATH_SEGMENTS.get(segment) || segment : segment));
+    .map((segment) => (locale === 'en' ? localizeEnglishRouteSegment(segment) : segment));
 
   let localizedPath = localizedSegments.length ? `/${localizedSegments.join('/')}` : '/';
   if (trailingSlash && localizedPath !== '/' && !localizedPath.endsWith('/')) {

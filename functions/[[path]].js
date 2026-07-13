@@ -1,21 +1,4 @@
-const LEGACY_ENGLISH_SEGMENTS = new Map([
-    ['ansioluettelot', 'resume'],
-    ['cv-make', 'cv-builder'],
-    ['hakemus-make', 'application-builder'],
-    ['hakemus-it', 'it-application'],
-    ['hakemus-it.html', 'it-application.html'],
-    ['hakemus-jakelu', 'delivery-application'],
-    ['hakemus-jakelu.html', 'delivery-application.html'],
-    ['huumorikuvat', 'funny-pictures'],
-    ['jako', 'share'],
-    ['linkinlyhennin', 'link-shortener'],
-    ['lyhennin', 'shortener'],
-    ['lyhennin.html', 'shortener.html'],
-    ['ohjeet', 'guides'],
-    ['salasanat', 'passwords'],
-    ['salasanat.html', 'passwords.html'],
-    ['vieraskirja', 'guestbook']
-]);
+import { localizeEnglishRouteSegment } from '../route-localization.js';
 
 // functions/[[path]].js
 export async function onRequestGet(context) {
@@ -84,7 +67,7 @@ function getLegacyEnglishRedirect(url) {
     const hasTrailingSlash = url.pathname.endsWith('/');
     const segments = url.pathname.split('/').filter(Boolean);
     const translated = segments.map((segment, index) => (
-        index === 0 ? segment : (LEGACY_ENGLISH_SEGMENTS.get(segment) || segment)
+        index === 0 ? segment : localizeEnglishRouteSegment(segment)
     ));
 
     if (translated.join('/') === segments.join('/')) {
