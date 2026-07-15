@@ -59,5 +59,6 @@ export async function onRequestGet(context) {
 function redirectToShareError(request) {
     const acceptLanguage = request.headers.get('accept-language') || '';
     const errorPath = acceptLanguage.toLowerCase().includes('en') ? '/en/share/error' : '/jako/error';
-    return Response.redirect(errorPath, 302);
+    const redirectUrl = new URL(errorPath, request.url);
+    return Response.redirect(redirectUrl.toString(), 302);
 }
