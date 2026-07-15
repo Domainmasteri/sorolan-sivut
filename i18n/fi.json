@@ -87,6 +87,14 @@
         "6. Contact": "6. Yhteystiedot",
         "If you have any questions regarding this privacy policy, you can contact us at: contact.make@sorola.fi": "Jos sinulla on kysyttävää tästä tietosuojakäytännöstä, voit ottaa yhteyttä osoitteeseen: contact.make@sorola.fi"
       }
+    },
+    "jako/error.html": {
+      "text": {
+        "Sorola Share - Error": "Sorola Share - Virhe",
+        "File is no longer available": "Tiedostoa ei ole enää saatavilla",
+        "The file behind this share link was not found on the server. The file may have expired or it has been removed.": "Jakolinkin tiedostoa ei löytynyt palvelimelta. Tiedosto on voinut vanhentua tai se on poistettu.",
+        "Back to file sharing": "Takaisin tiedostonjakoon"
+      }
     }
   },
   "js": {

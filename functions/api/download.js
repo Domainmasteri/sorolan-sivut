@@ -4,7 +4,7 @@ export async function onRequestGet(context) {
     const fileId = url.searchParams.get('file');
     
     if (!fileId) {
-        return new Response('Tiedostoa ei määritetty URL-osoitteessa.', { status: 400 });
+        return redirectToShareError(context.request);
     }
 
     if (!context.env.SHARE_BUCKET) {
@@ -14,7 +14,7 @@ export async function onRequestGet(context) {
     const object = await context.env.SHARE_BUCKET.get(fileId);
 
     if (object === null) {
-        return new Response('Tiedostoa ei löytynyt tai se on jo poistettu.', { status: 404 });
+        return redirectToShareError(context.request);
     }
 
     const metadata = object.customMetadata || {};
@@ -23,7 +23,7 @@ export async function onRequestGet(context) {
     const expiresAt = parseInt(metadata.expiresAt || '0');
     if (expiresAt && Date.now() > expiresAt) {
         await context.env.SHARE_BUCKET.delete(fileId); // Poistetaan R2:sta tilaa viemästä
-        return new Response('Tiedosto on vanhentunut ja poistettu palvelimelta.', { status: 404 });
+        return redirectToShareError(context.request);
     }
 
     // 2. TARKISTETAAN LATAUSRAJOITUS
@@ -54,4 +54,10 @@ export async function onRequestGet(context) {
     headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(originalName)}"`);
 
     return new Response(object.body, { headers });
+}
+
+function redirectToShareError(request) {
+    const acceptLanguage = request.headers.get('accept-language') || '';
+    const errorPath = acceptLanguage.toLowerCase().includes('en') ? '/en/share/error' : '/jako/error';
+    return Response.redirect(errorPath, 302);
 }
