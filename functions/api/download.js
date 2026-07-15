@@ -57,8 +57,36 @@ export async function onRequestGet(context) {
 }
 
 function redirectToShareError(request) {
-    const acceptLanguage = request.headers.get('accept-language') || '';
-    const errorPath = acceptLanguage.toLowerCase().includes('en') ? '/en/share/error' : '/jako/error';
+    const errorPath = prefersEnglish(request) ? '/en/share/error' : '/jako/error';
     const redirectUrl = new URL(errorPath, request.url);
     return Response.redirect(redirectUrl.toString(), 302);
+}
+
+function prefersEnglish(request) {
+    const header = request.headers.get('accept-language');
+    if (!header) return false;
+
+    let bestLanguage = '';
+    let bestQuality = -1;
+
+    for (const part of header.split(',')) {
+        const [languageTag, ...params] = part.trim().split(';');
+        if (!languageTag) continue;
+
+        let quality = 1;
+        for (const param of params) {
+            const [key, value] = param.trim().split('=');
+            if (key === 'q') {
+                const parsed = Number.parseFloat(value);
+                if (!Number.isNaN(parsed)) quality = parsed;
+            }
+        }
+
+        if (quality > bestQuality) {
+            bestQuality = quality;
+            bestLanguage = languageTag.toLowerCase();
+        }
+    }
+
+    return bestLanguage.startsWith('en');
 }
