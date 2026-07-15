@@ -8,8 +8,8 @@ function luoSatunnainenPolku(pituus = 5) {
 }
 
 const DOMAIN_CONFIG = {
-  "srla.fi": { table: "srla_links", baseUrl: "https://srla.fi" },
-  "srl.la": { table: "srl_links", baseUrl: "https://srl.la" }
+  "srla.fi": { baseUrl: "https://srla.fi" },
+  "srl.la": { baseUrl: "https://srl.la" }
 };
 
 async function varmistaSrlTaulu(env) {
@@ -68,9 +68,15 @@ export async function onRequest(context) {
 
     try {
       // Tallennetaan valitun domainin tauluun
-      await env.DB.prepare(
-          `INSERT INTO ${domainConfig.table} (short_path, original_url) VALUES (?, ?)`
-      ).bind(path, kohdeUrl).run();
+      if (domain === "srl.la") {
+        await env.DB.prepare(
+          "INSERT INTO srl_links (short_path, original_url) VALUES (?, ?)"
+        ).bind(path, kohdeUrl).run();
+      } else {
+        await env.DB.prepare(
+          "INSERT INTO srla_links (short_path, original_url) VALUES (?, ?)"
+        ).bind(path, kohdeUrl).run();
+      }
       
       // Laajennus odottaa vastausta muodossa: { success: true, shortUrl: "osoite" }
       const shortUrl = `${domainConfig.baseUrl}/${path}`;

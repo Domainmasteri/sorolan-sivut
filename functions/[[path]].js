@@ -27,12 +27,20 @@ export async function onRequestGet(context) {
         if (shortPath.startsWith('api/')) return next();
 
         try {
-            const table = hostname === 'srl.la' ? 'srl_links' : 'srla_links';
-            const result = await env.DB.prepare(`SELECT original_url FROM ${table} WHERE short_path = ?`).bind(shortPath).first();
+            let result;
+            if (hostname === 'srl.la') {
+                result = await env.DB.prepare("SELECT original_url FROM srl_links WHERE short_path = ?").bind(shortPath).first();
+            } else {
+                result = await env.DB.prepare("SELECT original_url FROM srla_links WHERE short_path = ?").bind(shortPath).first();
+            }
             
             if (result && result.original_url) {
                 // Lisätään klikkaus taustalla (ei hidasta kävijän siirtymistä!)
-                context.waitUntil(env.DB.prepare(`UPDATE ${table} SET clicks = clicks + 1 WHERE short_path = ?`).bind(shortPath).run());
+                if (hostname === 'srl.la') {
+                    context.waitUntil(env.DB.prepare("UPDATE srl_links SET clicks = clicks + 1 WHERE short_path = ?").bind(shortPath).run());
+                } else {
+                    context.waitUntil(env.DB.prepare("UPDATE srla_links SET clicks = clicks + 1 WHERE short_path = ?").bind(shortPath).run());
+                }
                 return Response.redirect(result.original_url, 302);
             }
         } catch (e) {}
