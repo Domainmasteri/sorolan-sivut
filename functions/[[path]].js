@@ -14,36 +14,50 @@ export async function onRequestGet(context) {
         return Response.redirect(legacyEnglishRedirect, 302);
     }
 
-    // --- SRLA.FI LIIKENNE ---
-    if (hostname === 'srla.fi') {
+    const shortenerErrorUrl = 'https://sorola.fi/lyhennin/error';
+    const shortenerHomeUrl = 'https://sorola.fi/lyhennin';
+
+    // --- SRLA.FI JA SRL.LA LIIKENNE ---
+    if (hostname === 'srla.fi' || hostname === 'srl.la') {
         if (!pathArray || pathArray.length === 0) {
-            return Response.redirect('https://sorola.fi/lyhennin', 302);
+            return Response.redirect(shortenerHomeUrl, 302);
         }
 
         const shortPath = pathArray.join('/');
         if (shortPath.startsWith('api/')) return next();
 
         try {
-            const result = await env.DB.prepare("SELECT original_url FROM srla_links WHERE short_path = ?").bind(shortPath).first();
+            let result;
+            if (hostname === 'srl.la') {
+                result = await env.DB.prepare("SELECT original_url FROM srl_links WHERE short_path = ?").bind(shortPath).first();
+            } else {
+                result = await env.DB.prepare("SELECT original_url FROM srla_links WHERE short_path = ?").bind(shortPath).first();
+            }
             
             if (result && result.original_url) {
                 // Lisätään klikkaus taustalla (ei hidasta kävijän siirtymistä!)
-                context.waitUntil(env.DB.prepare("UPDATE srla_links SET clicks = clicks + 1 WHERE short_path = ?").bind(shortPath).run());
+                if (hostname === 'srl.la') {
+                    context.waitUntil(env.DB.prepare("UPDATE srl_links SET clicks = clicks + 1 WHERE short_path = ?").bind(shortPath).run());
+                } else {
+                    context.waitUntil(env.DB.prepare("UPDATE srla_links SET clicks = clicks + 1 WHERE short_path = ?").bind(shortPath).run());
+                }
                 return Response.redirect(result.original_url, 302);
             }
         } catch (e) {}
-        return Response.redirect('https://sorola.fi/lyhennin/error', 302);
+        return Response.redirect(shortenerErrorUrl, 302);
     }
 
     // --- PÄÄSIVUSTO JA SORO.LA ---
-    if (!pathArray || pathArray.length === 0) return next();
-    
-    const shortPath = pathArray.join('/');
-    if (shortPath.startsWith('tyylit/') || shortPath.startsWith('admin/') || shortPath.startsWith('api/')) return next();
-    
     if (hostname === 'sorola.fi') return next();
 
     if (hostname === 'soro.la') {
+        if (!pathArray || pathArray.length === 0) {
+            return Response.redirect(shortenerHomeUrl, 302);
+        }
+
+        const shortPath = pathArray.join('/');
+        if (shortPath.startsWith('api/')) return next();
+
         try {
             const result = await env.DB.prepare("SELECT original_url FROM links WHERE short_path = ?").bind(shortPath).first();
             
@@ -53,8 +67,13 @@ export async function onRequestGet(context) {
                 return Response.redirect(result.original_url, 302);
             }
         } catch (e) {}
-        return Response.redirect('https://sorola.fi/lyhennin/error', 302);
+        return Response.redirect(shortenerErrorUrl, 302);
     }
+
+    if (!pathArray || pathArray.length === 0) return next();
+    
+    const shortPath = pathArray.join('/');
+    if (shortPath.startsWith('tyylit/') || shortPath.startsWith('admin/') || shortPath.startsWith('api/')) return next();
 
     return next();
 }

@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const lomake = document.getElementById('lyhennin-lomake');
     const urlInput = lomake.querySelector('input[name="url"]');
+    const domainInput = lomake.querySelector('select[name="domain"]');
     const tulosAlue = document.getElementById('tulos-alue');
     const lyhennettyUrl = document.getElementById('lyhennetty-url');
     const kopioiBtn = document.getElementById('kopioi-btn');
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!voiLahettaa) return;
 
         const alkuperainenUrl = urlInput.value.trim();
+        const domain = (domainInput?.value || 'srla.fi').trim();
 
         // Laitetaan lukkoon käsittelyn ajaksi
         voiLahettaa = false;
@@ -27,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             // Rakennetaan URL (vain kohde-osoite riittää)
-            const fetchUrl = `${WORKER_URL}?url=${encodeURIComponent(alkuperainenUrl)}`;
+            const fetchUrl = `${WORKER_URL}?url=${encodeURIComponent(alkuperainenUrl)}&domain=${encodeURIComponent(domain)}`;
             
             // Tehdään pyyntö Workerille
             const response = await fetch(fetchUrl);

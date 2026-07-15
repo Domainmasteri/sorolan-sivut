@@ -28,6 +28,18 @@ function luoSatunnainenPolku(pituus = 5) {
     return Array.from(randomValues).map(v => merkit[v % merkit.length]).join('');
 }
 
+async function varmistaSrlTaulu(env) {
+    await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS srl_links (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            short_path TEXT NOT NULL UNIQUE,
+            original_url TEXT NOT NULL,
+            clicks INTEGER NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `).run();
+}
+
 export async function onRequest(context) {
     const { request, env } = context;
     
@@ -37,15 +49,18 @@ export async function onRequest(context) {
 
     try {
         const url = new URL(request.url);
+        await varmistaSrlTaulu(env);
 
         // GET - Ladataan molempien domainien linkit erikseen
         if (request.method === "GET") {
             const sorola = await env.DB.prepare("SELECT * FROM links ORDER BY created_at DESC").all();
             const srla = await env.DB.prepare("SELECT * FROM srla_links ORDER BY created_at DESC").all();
+            const srl = await env.DB.prepare("SELECT * FROM srl_links ORDER BY created_at DESC").all();
             
             return new Response(JSON.stringify({ 
                 sorola: sorola.results, 
-                srla: srla.results 
+                srla: srla.results,
+                srl: srl.results
             }), { status: 200, headers: { 'Content-Type': 'application/json' } });
         }
 
@@ -60,11 +75,17 @@ export async function onRequest(context) {
             if (!path || path.trim() === "") path = luoSatunnainenPolku();
             else path = path.trim().replace(/[^a-zA-Z0-9_-]/g, "");
 
-            const table = domain === 'srla.fi' ? 'srla_links' : 'links';
-
             try {
                 // Varmistetaan, että clicks on 0 luodessa
-                await env.DB.prepare(`INSERT INTO ${table} (short_path, original_url, clicks) VALUES (?, ?, 0)`).bind(path, originalURL).run();
+                if (domain === 'soro.la') {
+                    await env.DB.prepare("INSERT INTO links (short_path, original_url, clicks) VALUES (?, ?, 0)").bind(path, originalURL).run();
+                } else if (domain === 'srla.fi') {
+                    await env.DB.prepare("INSERT INTO srla_links (short_path, original_url, clicks) VALUES (?, ?, 0)").bind(path, originalURL).run();
+                } else if (domain === 'srl.la') {
+                    await env.DB.prepare("INSERT INTO srl_links (short_path, original_url, clicks) VALUES (?, ?, 0)").bind(path, originalURL).run();
+                } else {
+                    return new Response(JSON.stringify({ error: "Virheellinen domain." }), { status: 400 });
+                }
                 return new Response(JSON.stringify({ success: true, path: path, domain: domain }), { status: 200 });
             } catch (dbError) {
                 if (dbError.message.includes('UNIQUE')) return new Response(JSON.stringify({ error: "Tämä lyhenne on jo käytössä!" }), { status: 400 });
@@ -79,8 +100,15 @@ export async function onRequest(context) {
 
             if (!newOriginalURL) return new Response(JSON.stringify({ error: "Uusi kohdeosoite puuttuu." }), { status: 400 });
             
-            const table = domain === 'srla.fi' ? 'srla_links' : 'links';
-            await env.DB.prepare(`UPDATE ${table} SET original_url = ? WHERE short_path = ?`).bind(newOriginalURL, path).run();
+            if (domain === 'soro.la') {
+                await env.DB.prepare("UPDATE links SET original_url = ? WHERE short_path = ?").bind(newOriginalURL, path).run();
+            } else if (domain === 'srla.fi') {
+                await env.DB.prepare("UPDATE srla_links SET original_url = ? WHERE short_path = ?").bind(newOriginalURL, path).run();
+            } else if (domain === 'srl.la') {
+                await env.DB.prepare("UPDATE srl_links SET original_url = ? WHERE short_path = ?").bind(newOriginalURL, path).run();
+            } else {
+                return new Response(JSON.stringify({ error: "Virheellinen domain." }), { status: 400 });
+            }
             
             return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
@@ -92,8 +120,15 @@ export async function onRequest(context) {
             
             if (!pathToRemove || !domainToRemove) return new Response(JSON.stringify({ error: 'Tiedot puuttuvat' }), { status: 400 });
 
-            const table = domainToRemove === 'srla.fi' ? 'srla_links' : 'links';
-            await env.DB.prepare(`DELETE FROM ${table} WHERE short_path = ?`).bind(pathToRemove).run();
+            if (domainToRemove === 'soro.la') {
+                await env.DB.prepare("DELETE FROM links WHERE short_path = ?").bind(pathToRemove).run();
+            } else if (domainToRemove === 'srla.fi') {
+                await env.DB.prepare("DELETE FROM srla_links WHERE short_path = ?").bind(pathToRemove).run();
+            } else if (domainToRemove === 'srl.la') {
+                await env.DB.prepare("DELETE FROM srl_links WHERE short_path = ?").bind(pathToRemove).run();
+            } else {
+                return new Response(JSON.stringify({ error: "Virheellinen domain." }), { status: 400 });
+            }
             
             return new Response(JSON.stringify({ success: true }), { status: 200 });
         }
