@@ -34,6 +34,11 @@
         <div class="osion-tausta">
             <h2>Luo Lyhytlinkki</h2>
             <form id="lyhennin-lomake" class="flex-form">
+                <label for="domain-syote" class="sr-only">Lyhytlinkin domain</label>
+                <select id="domain-syote" class="syote" name="domain" style="flex: 0.35; min-width: 120px;" aria-label="Lyhytlinkin domain">
+                    <option value="srla.fi">srla.fi</option>
+                    <option value="srl.la">srl.la</option>
+                </select>
                 <label for="url-syote" class="sr-only">Lyhennettävä URL-osoite</label>
                 <input type="url" id="url-syote" class="syote" name="url" placeholder="http(s)://" pattern="https?://.+" required aria-label="Lyhennettävä URL-osoite">
                 <button type="submit" class="nappula">Lyhennä linkki</button>
