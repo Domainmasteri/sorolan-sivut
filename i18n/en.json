@@ -764,6 +764,14 @@
         "Tämä on testisivu": "This is a test page",
         "Linkkejä": "Links"
       }
+    },
+    "jako/error.html": {
+      "text": {
+        "Sorola Share - Virhe": "Sorola Share - Error",
+        "Tiedostoa ei ole enää saatavilla": "File is no longer available",
+        "Jakolinkin tiedostoa ei löytynyt palvelimelta. Tiedosto on voinut vanhentua tai se on poistettu.": "The file behind this share link was not found on the server. The file may have expired or it has been removed.",
+        "Takaisin tiedostonjakoon": "Back to file sharing"
+      }
     }
   },
   "js": {
