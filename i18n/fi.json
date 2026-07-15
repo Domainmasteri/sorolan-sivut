@@ -90,7 +90,7 @@
     },
     "jako/error.html": {
       "text": {
-        "Sorola Share - Error": "Sorola Share - Virhe",
+        "Sorola Share - Virhe": "Sorola Share - Virhe",
         "File is no longer available": "Tiedostoa ei ole enää saatavilla",
         "The file behind this share link was not found on the server. The file may have expired or it has been removed.": "Jakolinkin tiedostoa ei löytynyt palvelimelta. Tiedosto on voinut vanhentua tai se on poistettu.",
         "Back to file sharing": "Takaisin tiedostonjakoon"
