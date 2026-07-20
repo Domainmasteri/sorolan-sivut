@@ -56,6 +56,53 @@
         "new Date(i.created_at).toLocaleDateString('fi-FI')": "new Date(i.created_at).toLocaleDateString('en-US')"
       }
     },
+    "vieraskirja/index.html": {
+      "text": {
+        "Vieraskirja - Sorolan Sakki": "Guestbook - Sorolan Sakki",
+        "Vieraskirja": "Guestbook",
+        "Jätä puumerkkisi ja terveiset Sorolan perheelle! Sana on vapaa.": "Leave your mark and greetings for the Sorola family! All words are welcome.",
+        "✍️ Jätä viesti": "✍️ Leave a message",
+        "Nimesi": "Your name",
+        "Viestisi...": "Your message...",
+        "Lähetä viesti": "Send message",
+        "Ei vielä viestejä. Ole ensimmäinen!": "No messages yet. Be the first!",
+        "Viestejä ei voitu ladata.": "Messages could not be loaded.",
+        "Palvelinvirhe viestejä ladattaessa.": "Server error while loading messages.",
+        "Nimi on pakollinen.": "Name is required.",
+        "Viesti on pakollinen.": "Message is required.",
+        "Syötä laskutoimituksen vastaus.": "Please enter the answer to the calculation.",
+        "Lähetetään...": "Sending...",
+        "Viestisi on lähetetty! Kiitos! 🎉": "Your message has been sent! Thank you! 🎉",
+        "Virhe viestin lähetyksessä.": "Error sending message.",
+        "Palvelinvirhe. Yritä uudelleen.": "Server error. Please try again.",
+        "⚡ Ylläpito": "⚡ Admin",
+        "⚡ Ylläpidon vastaus:": "⚡ Admin reply:",
+        "Jätä terveisesi Sorolan perheelle vieraskirjassa. Sana on vapaa!": "Leave your greetings for the Sorola family in the guestbook. All words are welcome!"
+      },
+      "attributes": {
+        "Jätä terveisesi Sorolan perheelle vieraskirjassa. Sana on vapaa!": "Leave your greetings for the Sorola family in the guestbook. All words are welcome!",
+        "Laskutoimituksen vastaus": "Answer to the calculation",
+        "Arvo uusi laskutoimitus": "Generate a new calculation",
+        "Nimesi": "Your name",
+        "Viestisi...": "Your message...",
+        "Vastaus": "Answer"
+      },
+      "raw": {
+        "d.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })": "d.toLocaleDateString('en-US', { day: 'numeric', month: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })",
+        "`Paljonko on ${a} ${opMerkki} ${b}?`": "`How much is ${a} ${opMerkki} ${b}?`",
+        "'Nimi on pakollinen.'": "'Name is required.'",
+        "'Viesti on pakollinen.'": "'Message is required.'",
+        "'Syötä laskutoimituksen vastaus.'": "'Please enter the answer to the calculation.'",
+        "'Lähetetään...'": "'Sending...'",
+        "'Viestisi on lähetetty! Kiitos! 🎉'": "'Your message has been sent! Thank you! 🎉'",
+        "'Virhe viestin lähetyksessä.'": "'Error sending message.'",
+        "'Palvelinvirhe. Yritä uudelleen.'": "'Server error. Please try again.'",
+        "'Viestejä ei voitu ladata.'": "'Messages could not be loaded.'",
+        "'Palvelinvirhe viestejä ladattaessa.'": "'Server error while loading messages.'",
+        "'Ei vielä viestejä. Ole ensimmäinen!'": "'No messages yet. Be the first!'",
+        "btn.textContent = 'Lähetä viesti'": "btn.textContent = 'Send message'"
+      }
+    },
     "index.html": {
       "text": {
         "Sorola.fi - Hyödylliset IT-työkalut ja tekniset ohjeet": "Sorola.fi - Useful IT tools and technical guides",
@@ -655,17 +702,6 @@
         "Privacy Policy for Sorolan Holvi": "Privacy Policy for Sorola Vault",
         "Privacy Policy - Sorolan Holvi": "Privacy Policy - Sorola Vault",
         "Sorolan Holvi (\"the Extension\") is a personal, encrypted password manager committed to protecting your privacy. This Privacy Policy explains how the Extension handles your data.": "Sorola Vault (\"the Extension\") is a personal, encrypted password manager committed to protecting your privacy. This Privacy Policy explains how the Extension handles your data."
-      }
-    },
-    "vieraskirja/index.html": {
-      "text": {
-        "Vieraskirja - Sorolan Sakki": "Guestbook - Sorolan Sakki",
-        "Vieraskirja": "Guestbook",
-        "Jätä puumerkkisi ja terveiset Sorolan perheelle! Sana on vapaa.": "Leave your mark and greetings for the Sorola family! Say whatever is on your mind."
-      },
-      "attributes": {
-        "Jätä terveisesi Sorolan perheelle vieraskirjassa. Sana on vapaa!": "Leave your greetings for the Sorola family in the guestbook.",
-        "Jätä terveisesi Sorolan perheelle vieraskirjassa.": "Leave your greetings for the Sorola family in the guestbook."
       }
     },
     "huumorikuvat/index.html": {

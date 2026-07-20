@@ -177,6 +177,37 @@
                 </div>
             </div>
 
+            <!-- Vieraskirja -->
+            <div class="admin-section" style="margin-top: 25px;" id="guestbook-section">
+                <h2 style="font-size: 1.1rem;">📖 Vieraskirja</h2>
+
+                <!-- Ylläpidon oma viesti -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 0.95rem; color: #a0aec0; margin-bottom: 10px;">Kirjoita ylläpidon viesti</h3>
+                    <div class="flex-form">
+                        <input type="text" id="gb-admin-nimi" class="syote" placeholder="Lähettäjän nimi (esim. Ylläpito)" maxlength="100">
+                        <textarea id="gb-admin-viesti" class="syote" placeholder="Viesti..." rows="3" maxlength="2000" style="resize: vertical;"></textarea>
+                        <button onclick="lahetaYllapitoViesti()" id="btn-gb-admin-send" class="nappula nappi-oranssi nappi-pieni">Lähetä ylläpidon viesti</button>
+                    </div>
+                </div>
+
+                <!-- Viestilista -->
+                <div style="overflow-x: auto;">
+                    <table id="gb-taulukko">
+                        <thead>
+                            <tr>
+                                <th>Nimi</th>
+                                <th>Viesti</th>
+                                <th>Vastaus</th>
+                                <th>Pvm</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gb-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Salasanan vaihto -->
             <div class="admin-section" style="margin-top: 25px;">
                 <h2 style="font-size: 1.1rem;">🔑 Change password</h2>
@@ -204,6 +235,7 @@
         const API_HUMOR_IMAGES = '/api/humor/images';
         const API_HUMOR_UPLOAD = '/api/humor/upload';
         const API_HUMOR_IMAGE = '/api/humor/image';
+        const API_GUESTBOOK = '/api/guestbook';
 
         let sessionToken = localStorage.getItem('sorola_admin_token');
 
@@ -238,6 +270,7 @@
             lataaKayttajat();
             lataaKutsut();
             lataaHumoriKuvat();
+            lataaVieraskirja();
         }
 
         // --- AUTH ---
@@ -519,6 +552,100 @@
                 if (res.ok) { naytaIlmoitus("Kuva poistettu.", "onnistui"); lataaHumoriKuvat(); }
                 else { const data = await res.json(); naytaIlmoitus(data.error || "Poisto epäonnistui."); }
             } catch (e) { naytaIlmoitus("Delete failed."); }
+        }
+
+        // --- VIERASKIRJA ---
+        function escapeHtmlAdmin(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function lataaVieraskirja() {
+            const tbody = document.getElementById('gb-tbody');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;"><div class="lataus-spinner"></div></td></tr>`;
+            try {
+                const res = await fetch(API_GUESTBOOK);
+                if (res.status === 401) return kirjauduUlos();
+                const data = await res.json();
+                const viestit = data.messages || [];
+                if (!viestit.length) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#a0aec0;">Ei vielä viestejä.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = viestit.map(v => {
+                    const onYllapito = v.is_admin === 1 || v.is_admin === true;
+                    const nimiSolu = onYllapito
+                        ? `<strong style="color:#ffaa00;">${escapeHtmlAdmin(v.name)}</strong> <span style="font-size:0.75rem;color:#ffaa00;">(YP)</span>`
+                        : escapeHtmlAdmin(v.name);
+                    const viesti = escapeHtmlAdmin(v.message);
+                    const vastaus = v.admin_reply
+                        ? `<span style="color:#ffaa00;font-size:0.85rem;">${escapeHtmlAdmin(v.admin_reply)}</span>`
+                        : `<button class="nappula nappi-pieni nappi-oranssi" onclick="lisaaVastaus(${v.id})">Vastaa</button>`;
+                    const pvm = new Date(v.created_at).toLocaleDateString('fi-FI');
+                    return `<tr>
+                        <td style="white-space:nowrap;">${nimiSolu}</td>
+                        <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${viesti}">${viesti}</td>
+                        <td style="max-width:160px;">${vastaus}</td>
+                        <td style="font-size:0.8rem;color:#a0aec0;white-space:nowrap;">${pvm}</td>
+                        <td><button class="nappula nappi-pieni nappi-puna" onclick="poistaGbViesti(${v.id})">X</button></td>
+                    </tr>`;
+                }).join('');
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:#ef4444;">Virhe ladattaessa vieraskirjaa.</td></tr>`;
+            }
+        }
+
+        async function poistaGbViesti(id) {
+            if (!confirm('Delete tämä viesti pysyvästi?')) return;
+            try {
+                const res = await fetch(`${API_GUESTBOOK}?id=${id}`, { method: 'DELETE', headers: haeOtsakkeet() });
+                if (res.status === 401) return kirjauduUlos();
+                if (res.ok) { naytaIlmoitus('Viesti poistettu.', 'onnistui'); lataaVieraskirja(); }
+                else { const data = await res.json(); naytaIlmoitus(data.error || 'Poisto epäonnistui.'); }
+            } catch (e) { naytaIlmoitus('Delete failed.'); }
+        }
+
+        async function lisaaVastaus(id) {
+            const vastaus = prompt('Kirjoita vastaus tälle viestille:');
+            if (!vastaus || !vastaus.trim()) return;
+            try {
+                const res = await fetch(API_GUESTBOOK, {
+                    method: 'PATCH',
+                    headers: haeOtsakkeet(),
+                    body: JSON.stringify({ action: 'reply', id: id, reply: vastaus.trim() })
+                });
+                if (res.status === 401) return kirjauduUlos();
+                if (res.ok) { naytaIlmoitus('Vastaus lisätty!', 'onnistui'); lataaVieraskirja(); }
+                else { const data = await res.json(); naytaIlmoitus(data.error || 'Virhe vastauksen lisäyksessä.'); }
+            } catch (e) { naytaIlmoitus('Server error.'); }
+        }
+
+        async function lahetaYllapitoViesti() {
+            const nimi = document.getElementById('gb-admin-nimi').value.trim();
+            const viesti = document.getElementById('gb-admin-viesti').value.trim();
+            if (!nimi) return naytaIlmoitus('Nimi on pakollinen.');
+            if (!viesti) return naytaIlmoitus('Viesti on pakollinen.');
+            const btn = document.getElementById('btn-gb-admin-send');
+            btn.disabled = true; btn.textContent = 'Lähetetään...';
+            try {
+                const res = await fetch(API_GUESTBOOK, {
+                    method: 'PATCH',
+                    headers: haeOtsakkeet(),
+                    body: JSON.stringify({ action: 'admin_message', name: nimi, message: viesti })
+                });
+                if (res.status === 401) return kirjauduUlos();
+                if (res.ok) {
+                    naytaIlmoitus('Ylläpidon viesti lähetetty!', 'onnistui');
+                    document.getElementById('gb-admin-nimi').value = '';
+                    document.getElementById('gb-admin-viesti').value = '';
+                    lataaVieraskirja();
+                } else { const data = await res.json(); naytaIlmoitus(data.error || 'Virhe viestin lähetyksessä.'); }
+            } catch (e) { naytaIlmoitus('Server error.'); }
+            finally { btn.disabled = false; btn.textContent = 'Lähetä ylläpidon viesti'; }
         }
     </script>
 </body>
