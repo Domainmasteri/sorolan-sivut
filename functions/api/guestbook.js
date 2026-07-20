@@ -147,6 +147,6 @@ export async function onRequest(context) {
         return new Response("Tuntematon metodi.", { status: 405 });
 
     } catch (err) {
-        return json({ error: 'Palvelinvirhe.', details: err.message }, 500);
+        return json({ error: 'Palvelinvirhe.' }, 500);
     }
 }

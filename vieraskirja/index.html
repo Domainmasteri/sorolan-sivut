@@ -161,7 +161,7 @@
             let b = luvut[Math.floor(Math.random() * luvut.length)];
 
             // Vältetään negatiiviset tulokset vähennyslaskussa
-            if (op === '-' && b > a) { const tmp = a; a = b; b = tmp; }
+            if (op === '-' && b > a) [a, b] = [b, a];
             // Pidetään kertolasku kohtuullisena
             if (op === '*') { a = Math.floor(Math.random() * 9) + 1; b = Math.floor(Math.random() * 9) + 1; }
 
