@@ -181,10 +181,6 @@
             renderGalleria(jarjestetty);
         }
 
-        function esc(str) {
-            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-        }
-
         function renderGalleria(lista) {
             const ruudukko = document.getElementById('galleria-ruudukko');
             if (!lista.length) {
@@ -235,7 +231,10 @@
         }
 
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') suljeKuva({ target: document.getElementById('lightbox') });
+            if (e.key === 'Escape') {
+                document.getElementById('lightbox').classList.remove('auki');
+                document.getElementById('lightbox-kuva').src = '';
+            }
         });
 
         lataaGalleria();

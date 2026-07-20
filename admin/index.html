@@ -444,8 +444,12 @@
                     const tdImg = tr.insertCell(); tdImg.style.padding = '6px';
                     const img = document.createElement('img');
                     img.src = src; img.alt = otsikko; img.loading = 'lazy';
+                    img.tabIndex = 0;
+                    img.title = 'Avaa täysikokoisena';
+                    img.setAttribute('aria-label', otsikko + ' – avaa täysikokoisena');
                     img.style.cssText = 'width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #2d3748;cursor:pointer;';
                     img.addEventListener('click', () => window.open(src, '_blank'));
+                    img.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); window.open(src, '_blank'); } });
                     tdImg.appendChild(img);
                     // Title
                     const tdTitle = tr.insertCell(); tdTitle.style.cssText = 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'; tdTitle.title = otsikko; tdTitle.textContent = otsikko;
