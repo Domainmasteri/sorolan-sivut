@@ -1,10 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sorola favicon">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="sorola-gradient" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffaa00"/>
-      <stop offset="100%" stop-color="#f97316"/>
+    <!-- Tyylikäs sininen liukuväri -->
+    <linearGradient id="sorola-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1e40af" />
     </linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="#0b0d13"/>
-  <path d="M18 22c0-5.5 4.7-10 10.5-10H45v9H29.5c-1.2 0-2.2.9-2.2 2s1 2 2.2 2h6.8c5.8 0 10.5 4.5 10.5 10s-4.7 10-10.5 10H18v-9h17.8c1.2 0 2.2-.9 2.2-2s-1-2-2.2-2h-7.3C22.7 32 18 27.5 18 22z" fill="url(#sorola-gradient)"/>
+  
+  <!-- Moderni pyöristetty tausta (squircle) -->
+  <rect width="100" height="100" rx="24" fill="url(#sorola-grad)" />
+  
+  <!-- Paksu, selkeä ja skaalautuva S-kirjain -->
+  <path d="M 68 34 C 68 26 58 24 50 24 C 40 24 32 30 32 40 C 32 48 42 51 50 53 C 58 55 68 59 68 67 C 68 76 58 78 50 78 C 38 78 32 70 32 60" 
+        fill="none" 
+        stroke="#ffffff" 
+        stroke-width="14" 
+        stroke-linecap="round" />
 </svg>
